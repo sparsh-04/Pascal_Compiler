@@ -3,8 +3,9 @@ using namespace std;
 
 typedef struct node {
     char data;
-    struct tree *left;
-    struct tree *right;
+    
+    struct node *left;
+    struct node *right;
 } node;
 
 vector<string> getInput(){
@@ -24,11 +25,34 @@ vector<string> getInput(){
         s+="(#)";
         s+='\n';
         inp.push_back(s);
-        // cout<<s;
     }
-    // cout<<s;
     name.close();
     return inp;
+}
+bool nullable(node *root){
+
+    if(root->left==NULL and root->right==NULL){
+        if(root->data =='e')
+        return true;
+        else return false;
+    }
+    else {
+        if(root->data=='|')
+        return nullable(root->left) or  nullable(root->right);
+        else if(root->data=='.')
+        return nullable(root->left) and  nullable(root->right);
+        else if(root->data=='*')
+        return true;
+    }
+}
+set<int> firstpos(node *root){
+    set<int> s;
+     if(root->left==NULL and root->right==NULL){
+        if(root->data =='e')
+        return s;
+        else return false;
+    }
+
 }
 int main(){
     vector<string> inp = getInput();
