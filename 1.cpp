@@ -5,93 +5,11 @@ class node
 {
 public:
     char data;
-    node *right;
-    node *left;
-};
-
-string postfix(string s)
-{
-    stack<char> st;
-    int n = s.size();
-    string pos = "";
-    for (int i = 0; i < n; i++)
-    {
-        if (s[i] == '(')
-        {
-            st.push(s[i]);
-        }
-        else if (s[i] == ')')
-        {
-            if (st.top() == '(')
-            {
-                st.pop();
-            }
-            else
-            {
-                pos += st.top();
-                st.pop();
-                st.pop();
-            }
-        }
-        else if (s[i] == '*' || s[i] == '.' || s[i] == '+' || s[i] == '|')
-        {
-            st.push(s[i]);
-        }
-        else
-        {
-            pos += s[i];
-        }
-    }
-    return pos;
-}
-
-node *create(string s)
-{
-    stack<node *> st;
-    int n = s.size();
-    for (int i = 0; i < n; i++)
-    {
-        node *temp = new node();
-        if (s[i] == 'a' || s[i] == 'b' || s[i] == '#' || s[i] == 'e')
-        {
-            temp->right = NULL;
-            temp->left = NULL;
-            temp->data = s[i];
-            st.push(temp);
-        }
-        else if (s[i] == '*' || s[i] == '+' || s[i] == '?')
-        {
-            temp->right = NULL;
-            temp->left = st.top();
-            temp->data = s[i];
-            st.pop();
-            st.push(temp);
-        }
-        else if (s[i] == '|' || s[i] == '.')
-        {
-            temp->right = st.top();
-            st.pop();
-            temp->left = st.top();
-            st.pop();
-            temp->data = s[i];
-            st.push(temp);
-        }
-    }
-    cout << "\n";
-    return st.top();
-}
-
-// just for checking
-void print(node *root)
-{
-    if (root == NULL)
-    {
-        return;
-    }
-    print(root->left);
-    cout << root->data;
-    print(root->right);
-}
+    vector<int> num;
+    int pos;
+    struct node *left;
+    struct node *right;
+} node;
 
 vector<string> getInput()
 {
@@ -139,34 +57,19 @@ bool nullable(node *root)
             return true;
     }
 }
-// set<int> firstpos(node *root){
-//     set<int> s;
-//      if(root->left==NULL and root->right==NULL){
-//         if(root->data =='e')
-//         return s;
-//         else return false;
-//     }
-
-// }
-
-string modified(string s)
-{
-    string s1 = "";
-    if (s.size() > 0)
-        s1.push_back(s[0]);
-    for (int i = 1; i < s.length(); i++)
-    {
-        if (s[i - 1] == ')' && s[i] == '(')
-        {
-            s1.push_back('.');
-        }
-        s1.push_back(s[i]);
+vector<int> firstpos(node *root){
+    vector<int> s;
+     if(root->left==NULL and root->right==NULL){
+        if(root->data =='e')
+        return s;
+        else {
+            s.push_back(root->num[0]);
+            return s;
+        } 
     }
-    return s1;
-}
 
-int main()
-{
+}
+int main(){
     vector<string> inp = getInput();
     for (auto i : inp)
     {
