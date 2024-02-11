@@ -5,8 +5,13 @@ class node
 {
 public:
     char data;
+    int pos;
+    vector<int> first;
+    vector<int> last;
     node *right;
     node *left;
+    bool null;
+
 };
 
 string postfix(string s)
@@ -52,12 +57,15 @@ node *create(string s)
     for (int i = 0; i < n; i++)
     {
         node *temp = new node();
+        int j=1;
         if (s[i] == 'a' || s[i] == 'b' || s[i] == '#' || s[i] == 'e')
         {
             temp->right = NULL;
             temp->left = NULL;
             temp->data = s[i];
+            temp->pos = j;
             st.push(temp);
+            j++;
         }
         else if (s[i] == '*' || s[i] == '+' || s[i] == '?')
         {
@@ -76,6 +84,10 @@ node *create(string s)
             temp->data = s[i];
             st.push(temp);
         }
+        temp->null = nullable(temp);
+        temp->first = firstpos(temp);
+        temp->last = lastpos(temp);
+        
     }
     cout << "\n";
     return st.top();
@@ -119,6 +131,7 @@ vector<string> getInput()
     name.close();
     return inp;
 }
+
 bool nullable(node *root)
 {
 
@@ -139,15 +152,100 @@ bool nullable(node *root)
             return true;
     }
 }
-// set<int> firstpos(node *root){
-//     set<int> s;
-//      if(root->left==NULL and root->right==NULL){
-//         if(root->data =='e')
-//         return s;
-//         else return false;
-//     }
 
-// }
+vector<int> firstpos(node *root){
+    vector<int> s;
+     if(root->left==NULL and root->right==NULL){
+        if(root->data =='e')
+        return s;
+        else {
+            root->first.push_back(root->pos);
+        }
+    }
+    else if((root->data == '|')){
+            vector<int> v(10000);
+        vector<int>::iterator it, st;
+
+    sort(root->left->first.begin(), root->left->first.end());
+    sort(root->right->first.begin(), root->right->first.end());
+ 
+    // Using default operator<
+    it = set_union(root->left->first.begin(), root->left->first.end(), root->right->first.begin(), root->right->first.end(),
+                   v.begin());
+    for (st = v.begin(); st != it; ++st)
+        root->first.push_back( *st);
+    }
+    else if((root->data == '.')){
+        if(root->left->null){
+              vector<int> v(10000);
+            vector<int>::iterator it, st;
+            sort(root->left->first.begin(), root->left->first.end());
+            sort(root->right->first.begin(), root->right->first.end());
+        
+            // Using default operator<
+            it = set_union(root->left->first.begin(), root->left->first.end(), root->right->first.begin(), root->right->first.end(),
+                        v.begin());
+            for (st = v.begin(); st != it; ++st)
+                root->first.push_back( *st);
+            
+        }
+        else {
+            root->first= root->left->first;
+        }
+    }
+    else if((root->data == '*')){
+        root->first= root->left->first;
+    }
+
+
+}
+
+vector<int> lastpos(node *root){
+    vector<int> s;
+     if(root->left==NULL and root->right==NULL){
+        if(root->data =='e')
+        return s;
+        else {
+            root->last.push_back(root->pos);
+        }
+    }
+    else if((root->data == '|')){
+            vector<int> v(10000);
+        vector<int>::iterator it, st;
+
+    sort(root->left->last.begin(), root->left->last.end());
+    sort(root->right->last.begin(), root->right->last.end());
+ 
+    // Using default operator<
+    it = set_union(root->left->last.begin(), root->left->last.end(), root->right->last.begin(), root->right->last.end(),
+                   v.begin());
+    for (st = v.begin(); st != it; ++st)
+        root->last.push_back( *st);
+    }
+    else if((root->data == '.')){
+        if(root->right->null){
+            vector<int> v(10000);
+            vector<int>::iterator it, st;
+            sort(root->left->last.begin(), root->left->last.end());
+            sort(root->right->last.begin(), root->right->last.end());
+        
+            // Using default operator<
+            it = set_union(root->left->last.begin(), root->left->last.end(), root->right->last.begin(), root->right->last.end(),
+                        v.begin());
+            for (st = v.begin(); st != it; ++st)
+                root->last.push_back( *st);
+            
+        }
+        else {
+            root->last= root->right->last;
+        }
+    }
+    else if((root->data == '*')){
+        root->last= root->left->last;
+    }
+
+}
+
 
 string modified(string s)
 {
