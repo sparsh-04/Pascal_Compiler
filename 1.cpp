@@ -3,7 +3,7 @@ using namespace std;
 
 typedef struct node {
     char data;
-    
+    int val;    
     struct node *left;
     struct node *right;
 } node;
@@ -45,15 +45,15 @@ bool nullable(node *root){
         return true;
     }
 }
-set<int> firstpos(node *root){
-    set<int> s;
-     if(root->left==NULL and root->right==NULL){
-        if(root->data =='e')
-        return s;
-        else return false;
-    }
+// set<int> firstpos(node *root){
+//     set<int> s;
+//      if(root->left==NULL and root->right==NULL){
+//         if(root->data =='e')
+//         return s;
+//         else return false;
+//     }
 
-}
+// }
 int main(){
     vector<string> inp = getInput();
     for(auto i:inp){
