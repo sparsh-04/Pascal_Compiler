@@ -162,9 +162,45 @@ string modified(string s)
         }
         s1.push_back(s[i]);
     }
-    return s1;
-}
+    string s2 = "";
+    for(int i=0;i<s1.length();i++){
+        if(s1[i]== '?'){
+            int count = 1;
+            int j = 2;
+            while(j<i && count>0){
+                if(s1[i-j] == '(')
+                    count--;
+                else if(s1[i-j] == ')')
+                    count++;
+                j++;
+            }
+            s2 += ".(e)";
 
+        }
+        else if(s1[i] == '+'){
+            int count = 1;
+            int j = 2;
+            while(j<i && count>0){
+                if(s1[i-j] == '(')
+                    count--;
+                else if(s1[i-j] == ')')
+                    count++;
+                j++;
+            }
+            s2 += ".";
+            s2 += s1.substr(i-j,j );
+            s2 += "*)";
+        }
+        else{
+            s2.push_back(s1[i]);
+        }
+        //if + dekhay tohh ((xy)+) -> ((xy).((xy)*))
+        //if ? dekhay tohh ((xy)?) -> ((xy).(e))
+    }
+    return s2;
+    // (((((b)|((a)(b)))+)|((((b)|((a)(b)))*)(a))).(#))
+    // (((((b)|((a).(b))).(((b)|((a).(b)))*))|((((b)|((a).(b)))*).(a))).(#))hello
+}
 int main()
 {
     vector<string> inp = getInput();
