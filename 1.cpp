@@ -2,11 +2,13 @@
 using namespace std;
 class CreateDFA{
 public:
+
 unordered_map<string, pair<char, vector<int>>> states;
 unordered_map<char, pair<char, char>> dfa;
 unordered_set<int> pos_a, pos_b;
 int destination_marker;
 unordered_set<char> final_states;
+
 class node
 {
 public:
@@ -18,6 +20,7 @@ public:
     node *left;
     bool null;
 };
+
 map<int, vector<int>> follow;
 
 int insertPos(node *root, int count)
@@ -330,6 +333,7 @@ void computeTreeValues(node *root)
     lastpos(root);
     followpos(root);
 }
+
 string modified(string s)
 {
     string s1 = "";
@@ -485,7 +489,6 @@ void create_dfa(node *root)
         dfa[states[top].first].second = states[temp_b].first;
     }
 }
-
 
 };
 
