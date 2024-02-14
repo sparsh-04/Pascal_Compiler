@@ -13,6 +13,20 @@ public:
     bool null;
 
 };
+map<int,vector<int> > follow;
+
+int insertPos(node *root,int count){
+    if(root == nullptr){
+        return count;
+    }
+    if(root->left == nullptr && root->right == nullptr){
+        root->pos = count;
+        count++;
+    }
+    int l = insertPos(root->left ,count);
+    int r = insertPos(root->right , l);
+    return r;
+}
 
 string postfix(string s)
 {
@@ -246,6 +260,22 @@ vector<int> lastpos(node *root){
 
 }
 
+void followpos(node *root){
+    if(root->data=='.'){
+        for(auto i:root->left->last){
+            for(auto j:root->right->first)
+                follow[i].push_back(j);
+        }
+    }
+    else if(root->data=='*'){
+        for(auto i:root->last){
+            for(auto j:root->first){
+                follow[i].push_back(j);
+            }
+        }
+    }
+    return ;
+}
 
 string modified(string s)
 {
@@ -299,6 +329,7 @@ string modified(string s)
     // (((((b)|((a)(b)))+)|((((b)|((a)(b)))*)(a))).(#))
     // (((((b)|((a).(b))).(((b)|((a).(b)))*))|((((b)|((a).(b)))*).(a))).(#))hello
 }
+
 int main()
 {
     vector<string> inp = getInput();
