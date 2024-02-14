@@ -1,7 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
-unordered_map<string, char> states;
-unordered_map<char, char> dfa;
+unordered_map<string, pair<char, vector<int>>> states;
+unordered_map<char, pair<char, char>> dfa;
+unordered_set<int> pos_a, pos_b;
 class node
 {
 public:
@@ -25,6 +26,14 @@ int insertPos(node *root, int count)
     {
         root->pos = count;
         count++;
+        if (root->data == 'a')
+        {
+            pos_a.insert(root->pos);
+        }
+        if (root->data == 'b')
+        {
+            pos_b.insert(root->pos);
+        }
     }
     int l = insertPos(root->left, count);
     int r = insertPos(root->right, l);
@@ -169,32 +178,47 @@ bool nullable(node *root)
     }
 }
 
+// vector<int> firstpos(node *root)
+// {
+// 0 == phi
 vector<int> firstpos(node *root)
 {
-    // 0 == phi
-    vector<int> firstpos(node * root)
+    vector<int> s;
+    if (root->left == NULL and root->right == NULL)
     {
-        vector<int> s;
-        if (root->left == NULL and root->right == NULL)
+        if (root->data == 'e')
+            return s;
+        else
         {
-            if (root->data == 'e')
-                return s;
-            else
+            if (root->left == NULL and root->right == NULL)
             {
-                if (root->left == NULL and root->right == NULL)
+                if (root->data == 'e')
+                    return {0};
+                else
                 {
-                    if (root->data == 'e')
-                        return {0};
-                    else
-                    {
-                        root->first.push_back(root->pos);
-                    }
+                    root->first.push_back(root->pos);
                 }
-                else if ((root->data == '|'))
+            }
+            else if ((root->data == '|'))
+            {
+                vector<int> v(10000);
+                vector<int>::iterator it, st;
+
+                sort(root->left->first.begin(), root->left->first.end());
+                sort(root->right->first.begin(), root->right->first.end());
+
+                // Using default operator<
+                it = set_union(root->left->first.begin(), root->left->first.end(), root->right->first.begin(), root->right->first.end(),
+                               v.begin());
+                for (st = v.begin(); st != it; ++st)
+                    root->first.push_back(*st);
+            }
+            else if ((root->data == '.'))
+            {
+                if (root->left->null)
                 {
                     vector<int> v(10000);
                     vector<int>::iterator it, st;
-
                     sort(root->left->first.begin(), root->left->first.end());
                     sort(root->right->first.begin(), root->right->first.end());
 
@@ -204,179 +228,242 @@ vector<int> firstpos(node *root)
                     for (st = v.begin(); st != it; ++st)
                         root->first.push_back(*st);
                 }
-                else if ((root->data == '.'))
-                {
-                    if (root->left->null)
-                    {
-                        vector<int> v(10000);
-                        vector<int>::iterator it, st;
-                        sort(root->left->first.begin(), root->left->first.end());
-                        sort(root->right->first.begin(), root->right->first.end());
-
-                        // Using default operator<
-                        it = set_union(root->left->first.begin(), root->left->first.end(), root->right->first.begin(), root->right->first.end(),
-                                       v.begin());
-                        for (st = v.begin(); st != it; ++st)
-                            root->first.push_back(*st);
-                    }
-                    else
-                    {
-                        root->first = root->left->first;
-                    }
-                }
-                else if ((root->data == '*'))
+                else
                 {
                     root->first = root->left->first;
                 }
             }
-
-            vector<int> lastpos(node * root)
+            else if ((root->data == '*'))
             {
-                vector<int> s;
-                if (root->left == NULL and root->right == NULL)
-                {
-                    if (root->data == 'e')
-                        return s;
-                    else
-                    {
-                        root->last.push_back(root->pos);
-                    }
-                }
-                else if ((root->data == '|'))
-                {
-                    vector<int> v(10000);
-                    vector<int>::iterator it, st;
+                root->first = root->left->first;
+            }
+        }
+    }
+}
+vector<int> lastpos(node *root)
+{
+    vector<int> s;
+    if (root->left == NULL and root->right == NULL)
+    {
+        if (root->data == 'e')
+            return s;
+        else
+        {
+            root->last.push_back(root->pos);
+        }
+    }
+    else if ((root->data == '|'))
+    {
+        vector<int> v(10000);
+        vector<int>::iterator it, st;
 
-                    sort(root->left->last.begin(), root->left->last.end());
-                    sort(root->right->last.begin(), root->right->last.end());
+        sort(root->left->last.begin(), root->left->last.end());
+        sort(root->right->last.begin(), root->right->last.end());
 
-                    // Using default operator<
-                    it = set_union(root->left->last.begin(), root->left->last.end(), root->right->last.begin(), root->right->last.end(),
-                                   v.begin());
-                    for (st = v.begin(); st != it; ++st)
-                        root->last.push_back(*st);
-                }
-                else if ((root->data == '.'))
-                {
-                    if (root->right->null)
-                    {
-                        vector<int> v(10000);
-                        vector<int>::iterator it, st;
-                        sort(root->left->last.begin(), root->left->last.end());
-                        sort(root->right->last.begin(), root->right->last.end());
+        // Using default operator<
+        it = set_union(root->left->last.begin(), root->left->last.end(), root->right->last.begin(), root->right->last.end(),
+                       v.begin());
+        for (st = v.begin(); st != it; ++st)
+            root->last.push_back(*st);
+    }
+    else if ((root->data == '.'))
+    {
+        if (root->right->null)
+        {
+            vector<int> v(10000);
+            vector<int>::iterator it, st;
+            sort(root->left->last.begin(), root->left->last.end());
+            sort(root->right->last.begin(), root->right->last.end());
 
-                        // Using default operator<
-                        it = set_union(root->left->last.begin(), root->left->last.end(), root->right->last.begin(), root->right->last.end(),
-                                       v.begin());
-                        for (st = v.begin(); st != it; ++st)
-                            root->last.push_back(*st);
-                    }
-                    else
-                    {
-                        root->last = root->right->last;
-                    }
-                }
-                else if ((root->data == '*'))
+            // Using default operator<
+            it = set_union(root->left->last.begin(), root->left->last.end(), root->right->last.begin(), root->right->last.end(),
+                           v.begin());
+            for (st = v.begin(); st != it; ++st)
+                root->last.push_back(*st);
+        }
+        else
+        {
+            root->last = root->right->last;
+        }
+    }
+    else if ((root->data == '*'))
+    {
+        root->last = root->left->last;
+    }
+}
+
+void followpos(node *root)
+{
+    if (root->data == '.')
+    {
+        for (auto i : root->left->last)
+        {
+            for (auto j : root->right->first)
+                follow[i].push_back(j);
+        }
+    }
+    else if (root->data == '*')
+    {
+        for (auto i : root->last)
+        {
+            for (auto j : root->first)
+            {
+                follow[i].push_back(j);
+            }
+        }
+    }
+    return;
+}
+
+string modified(string s)
+{
+    string s1 = "";
+    if (s.size() > 0)
+        s1.push_back(s[0]);
+    for (int i = 1; i < s.length(); i++)
+    {
+        if (s[i - 1] == ')' && s[i] == '(')
+        {
+            s1.push_back('.');
+        }
+        s1.push_back(s[i]);
+    }
+    string s2 = "";
+    for (int i = 0; i < s1.length(); i++)
+    {
+        if (s1[i] == '?')
+        {
+            int count = 1;
+            int j = 2;
+            while (j < i && count > 0)
+            {
+                if (s1[i - j] == '(')
+                    count--;
+                else if (s1[i - j] == ')')
+                    count++;
+                j++;
+            }
+            s2 += ".(e)";
+        }
+        else if (s1[i] == '+')
+        {
+            int count = 1;
+            int j = 2;
+            while (j < i && count > 0)
+            {
+                if (s1[i - j] == '(')
+                    count--;
+                else if (s1[i - j] == ')')
+                    count++;
+                j++;
+            }
+            s2 += ".";
+            s2 += s1.substr(i - j, j);
+            s2 += "*)";
+        }
+        else
+        {
+            s2.push_back(s1[i]);
+        }
+        // if + dekhay tohh ((xy)+) -> ((xy).((xy)*))
+        // if ? dekhay tohh ((xy)?) -> ((xy).(e))
+    }
+    return s2;
+    // (((((b)|((a)(b)))+)|((((b)|((a)(b)))*)(a))).(#))
+    // (((((b)|((a).(b))).(((b)|((a).(b)))*))|((((b)|((a).(b)))*).(a))).(#))hello
+}
+
+void create_dfa(node *root)
+{
+    queue<string> q;
+    char sta = 'A';
+    vector<int> ini = root->first;
+    string s = "";
+    for (int i = 0; i < ini.size(); i++)
+    {
+        s += to_string(ini[i]);
+        s += '*';
+    }
+    q.push(s);
+    states[s] = {sta, root->first};
+    while (!q.empty())
+    {
+        string top = q.front();
+        q.pop();
+        unordered_set<int> a, b;
+        for (int i = 0; i < states[top].second.size(); i++)
+        {
+            int temp = states[top].second[i];
+            if (pos_a.find(temp) != pos_a.end())
+            {
+                for (int j = 0; j < follow[temp].size(); j++)
                 {
-                    root->last = root->left->last;
+                    a.insert(follow[temp][j]);
                 }
             }
-
-            void followpos(node * root)
+            if (pos_b.find(temp) != pos_b.end())
             {
-                if (root->data == '.')
+                for (int j = 0; j < follow[temp].size(); j++)
                 {
-                    for (auto i : root->left->last)
-                    {
-                        for (auto j : root->right->first)
-                            follow[i].push_back(j);
-                    }
+                    b.insert(follow[temp][j]);
                 }
-                else if (root->data == '*')
-                {
-                    for (auto i : root->last)
-                    {
-                        for (auto j : root->first)
-                        {
-                            follow[i].push_back(j);
-                        }
-                    }
-                }
-                return;
             }
+        }
+        vector<int> a_, b_;
+        for (auto it : a)
+        {
+            a_.push_back(it);
+        }
+        for (auto it : b)
+        {
+            b_.push_back(it);
+        }
+        sort(b_.begin(), b_.end());
+        sort(a_.begin(), a_.end());
+        string temp_a = "";
+        string temp_b = "";
+        for (int i = 0; i < a_.size(); i++)
+        {
+            temp_a += to_string(a_[i]);
+            temp_a += '*';
+        }
+        for (int i = 0; i < b_.size(); i++)
+        {
+            temp_b += to_string(b_[i]);
+            temp_b += '*';
+        }
+        if (states.find(temp_a) == states.end())
+        {
+            sta++;
+            states[temp_a] = {sta, a_};
+            q.push(temp_a);
+        }
+        dfa[states[top].first].first = states[temp_a].first;
+        if (states.find(temp_b) == states.end())
+        {
+            sta++;
+            states[temp_b] = {sta, b_};
+            q.push(temp_b);
+        }
+        dfa[states[top].first].second = states[temp_b].first;
+    }
+}
 
-            string modified(string s)
-            {
-                string s1 = "";
-                if (s.size() > 0)
-                    s1.push_back(s[0]);
-                for (int i = 1; i < s.length(); i++)
-                {
-                    if (s[i - 1] == ')' && s[i] == '(')
-                    {
-                        s1.push_back('.');
-                    }
-                    s1.push_back(s[i]);
-                }
-                string s2 = "";
-                for (int i = 0; i < s1.length(); i++)
-                {
-                    if (s1[i] == '?')
-                    {
-                        int count = 1;
-                        int j = 2;
-                        while (j < i && count > 0)
-                        {
-                            if (s1[i - j] == '(')
-                                count--;
-                            else if (s1[i - j] == ')')
-                                count++;
-                            j++;
-                        }
-                        s2 += ".(e)";
-                    }
-                    else if (s1[i] == '+')
-                    {
-                        int count = 1;
-                        int j = 2;
-                        while (j < i && count > 0)
-                        {
-                            if (s1[i - j] == '(')
-                                count--;
-                            else if (s1[i - j] == ')')
-                                count++;
-                            j++;
-                        }
-                        s2 += ".";
-                        s2 += s1.substr(i - j, j);
-                        s2 += "*)";
-                    }
-                    else
-                    {
-                        s2.push_back(s1[i]);
-                    }
-                    // if + dekhay tohh ((xy)+) -> ((xy).((xy)*))
-                    // if ? dekhay tohh ((xy)?) -> ((xy).(e))
-                }
-                return s2;
-                // (((((b)|((a)(b)))+)|((((b)|((a)(b)))*)(a))).(#))
-                // (((((b)|((a).(b))).(((b)|((a).(b)))*))|((((b)|((a).(b)))*).(a))).(#))hello
-            }
-
-            int main()
-            {
-                vector<string> inp = getInput();
-                for (auto i : inp)
-                {
-                    cout << i;
-                }
-                string s = modified(inp[1].substr(0, inp[1].size() - 1));
-                cout << s << "hello\n";
-                string y = postfix(s);
-                cout << "\n";
-                cout << y << " this is postfix" << endl;
-                node *temp = create(y);
-                cout << temp->data << " this is first node\n";
-                print(temp);
-                return 0;
-            }
+int main()
+{
+    vector<string> inp = getInput();
+    for (auto i : inp)
+    {
+        cout << i;
+    }
+    string s = modified(inp[1].substr(0, inp[1].size() - 1));
+    cout << s << "hello\n";
+    string y = postfix(s);
+    cout << "\n";
+    cout << y << " this is postfix" << endl;
+    node *temp = create(y);
+    cout << temp->data << " this is first node\n";
+    create_dfa(temp);
+    print(temp);
+    return 0;
+}
