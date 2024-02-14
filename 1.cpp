@@ -1,5 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
+class CreateDFA{
+public:
 unordered_map<string, pair<char, vector<int>>> states;
 unordered_map<char, pair<char, char>> dfa;
 unordered_set<int> pos_a, pos_b;
@@ -17,9 +19,7 @@ public:
     bool null;
 };
 map<int, vector<int>> follow;
-void firstpos(node *root);
-void lastpos(node *root);
-void nullable(node *root);
+
 int insertPos(node *root, int count)
 {
     if (root == nullptr)
@@ -486,24 +486,28 @@ void create_dfa(node *root)
     }
 }
 
+
+};
+
 int main()
 {
-    vector<string> inp = getInput();
+    CreateDFA obj;
+    vector<string> inp = obj.getInput();
     for (auto i : inp)
     {
         cout << i;
     }
-    string s = modified(inp[1].substr(0, inp[1].size() - 1));
+    string s = obj.modified(inp[1].substr(0, inp[1].size() - 1));
     cout << s << "hello\n";
-    string y = postfix(s);
+    string y = obj.postfix(s);
     cout << "\n";
     cout << y << " this is postfix" << endl;
-    node *temp = create(y);
+    CreateDFA::node *temp = obj.create(y);
     cout << temp->data << " this is first node\n";
-    int leaf_nodes = insertPos(temp, 1);
-    computeTreeValues(temp);
-    print(temp);
-    for (auto it : follow)
+    int leaf_nodes = obj.insertPos(temp, 1);
+    obj.computeTreeValues(temp);
+    obj.print(temp);
+    for (auto it : obj.follow)
     {
         cout << it.first << " ";
         for (auto j : it.second)
@@ -512,12 +516,12 @@ int main()
         }
         cout << endl;
     }
-    create_dfa(temp);
-    for (auto it : dfa)
+    obj.create_dfa(temp);
+    for (auto it : obj.dfa)
     {
         cout << it.first << " " << it.second.first << " " << it.second.second << "\n";
     }
-    for (auto it : final_states)
+    for (auto it : obj.final_states)
     {
         cout << it << " ";
     }
