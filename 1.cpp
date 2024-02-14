@@ -133,7 +133,7 @@ vector<string> getInput()
 }
 
 bool nullable(node *root)
-{
+{   
 
     if (root->left == NULL and root->right == NULL)
     {
@@ -152,12 +152,12 @@ bool nullable(node *root)
             return true;
     }
 }
-
+//0 == phi 
 vector<int> firstpos(node *root){
     vector<int> s;
      if(root->left==NULL and root->right==NULL){
         if(root->data =='e')
-        return s;
+        return {0};
         else {
             root->first.push_back(root->pos);
         }
@@ -194,7 +194,7 @@ vector<int> firstpos(node *root){
         }
     }
     else if((root->data == '*')){
-        root->first= root->left->first;
+        firstpos(root->left);
     }
 
 
