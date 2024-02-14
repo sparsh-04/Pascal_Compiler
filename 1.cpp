@@ -464,6 +464,10 @@ int main()
     node *temp = create(y);
     cout << temp->data << " this is first node\n";
     create_dfa(temp);
+    for (auto it : dfa)
+    {
+        cout << it.first << " " << it.second.first << " " << it.second.second << "\n";
+    }
     print(temp);
     return 0;
 }
