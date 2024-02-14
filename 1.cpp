@@ -15,7 +15,9 @@ public:
     bool null;
 };
 map<int, vector<int>> follow;
-
+void firstpos(node *root);
+void lastpos(node *root);
+void nullable(node *root);
 int insertPos(node *root, int count)
 {
     if (root == nullptr)
@@ -110,9 +112,9 @@ node *create(string s)
             temp->data = s[i];
             st.push(temp);
         }
-        temp->null = nullable(temp);
-        temp->first = firstpos(temp);
-        temp->last = lastpos(temp);
+        // temp->null = nullable(temp);
+        // temp->first = firstpos(temp);
+        // temp->last = lastpos(temp);
     }
     cout << "\n";
     return st.top();
@@ -126,7 +128,11 @@ void print(node *root)
         return;
     }
     print(root->left);
-    cout << root->data;
+    cout << root->data << " ";
+    // cout<<root->null<<" ";
+    for (auto i : root->last)
+        cout << i << " ";
+    cout << endl;
     print(root->right);
 }
 
@@ -157,96 +163,86 @@ vector<string> getInput()
     return inp;
 }
 
-bool nullable(node *root)
+void nullable(node *root)
 {
 
     if (root->left == NULL and root->right == NULL)
     {
         if (root->data == 'e')
-            return true;
+            root->null = true;
         else
-            return false;
+            root->null = false;
     }
     else
     {
         if (root->data == '|')
-            return nullable(root->left) or nullable(root->right);
+            root->null = root->left->null or root->right->null;
         else if (root->data == '.')
-            return nullable(root->left) and nullable(root->right);
+            root->null = root->left->null and root->right->null;
         else if (root->data == '*')
-            return true;
+            root->null = true;
     }
 }
-
-// vector<int> firstpos(node *root)
-// {
-// 0 == phi
-vector<int> firstpos(node *root)
+//-1 == phi
+void firstpos(node *root)
 {
     vector<int> s;
     if (root->left == NULL and root->right == NULL)
     {
         if (root->data == 'e')
-            return s;
+            root->first.push_back(-1);
         else
         {
-            if (root->left == NULL and root->right == NULL)
-            {
-                if (root->data == 'e')
-                    return {0};
-                else
-                {
-                    root->first.push_back(root->pos);
-                }
-            }
-            else if ((root->data == '|'))
-            {
-                vector<int> v(10000);
-                vector<int>::iterator it, st;
-
-                sort(root->left->first.begin(), root->left->first.end());
-                sort(root->right->first.begin(), root->right->first.end());
-
-                // Using default operator<
-                it = set_union(root->left->first.begin(), root->left->first.end(), root->right->first.begin(), root->right->first.end(),
-                               v.begin());
-                for (st = v.begin(); st != it; ++st)
-                    root->first.push_back(*st);
-            }
-            else if ((root->data == '.'))
-            {
-                if (root->left->null)
-                {
-                    vector<int> v(10000);
-                    vector<int>::iterator it, st;
-                    sort(root->left->first.begin(), root->left->first.end());
-                    sort(root->right->first.begin(), root->right->first.end());
-
-                    // Using default operator<
-                    it = set_union(root->left->first.begin(), root->left->first.end(), root->right->first.begin(), root->right->first.end(),
-                                   v.begin());
-                    for (st = v.begin(); st != it; ++st)
-                        root->first.push_back(*st);
-                }
-                else
-                {
-                    root->first = root->left->first;
-                }
-            }
-            else if ((root->data == '*'))
-            {
-                root->first = root->left->first;
-            }
+            root->first.push_back(root->pos);
         }
     }
+    else if ((root->data == '|'))
+    {
+        vector<int> v(10000);
+        vector<int>::iterator it, st;
+
+        sort(root->left->first.begin(), root->left->first.end());
+        sort(root->right->first.begin(), root->right->first.end());
+
+        // Using default operator<
+        it = set_union(root->left->first.begin(), root->left->first.end(), root->right->first.begin(), root->right->first.end(),
+                       v.begin());
+        for (st = v.begin(); st != it; ++st)
+            root->first.push_back(*st);
+    }
+    else if ((root->data == '.'))
+    {
+        if (root->left->null)
+        {
+            vector<int> v(10000);
+            vector<int>::iterator it, st;
+            sort(root->left->first.begin(), root->left->first.end());
+            sort(root->right->first.begin(), root->right->first.end());
+
+            // Using default operator<
+            it = set_union(root->left->first.begin(), root->left->first.end(), root->right->first.begin(), root->right->first.end(),
+                           v.begin());
+            for (st = v.begin(); st != it; ++st)
+                root->first.push_back(*st);
+        }
+        else
+        {
+            root->first = root->left->first;
+        }
+    }
+    else if ((root->data == '*'))
+    {
+        root->first = root->left->first;
+    }
 }
-vector<int> lastpos(node *root)
+
+void lastpos(node *root)
 {
     vector<int> s;
     if (root->left == NULL and root->right == NULL)
     {
         if (root->data == 'e')
-            return s;
+            root->last.push_back(-1);
         else
         {
             root->last.push_back(root->pos);
@@ -315,6 +311,19 @@ void followpos(node *root)
     return;
 }
 
+void computeTreeValues(node *root)
+{
+    if (root == NULL)
+        return;
+    if (root->left)
+        computeTreeValues(root->left);
+    if (root->right)
+        computeTreeValues(root->right);
+    nullable(root);
+    firstpos(root);
+    lastpos(root);
+    followpos(root);
+}
 string modified(string s)
 {
     string s1 = "";
