@@ -3,6 +3,8 @@ using namespace std;
 unordered_map<string, pair<char, vector<int>>> states;
 unordered_map<char, pair<char, char>> dfa;
 unordered_set<int> pos_a, pos_b;
+int destination_marker;
+unordered_set<char> final_states;
 class node
 {
 public:
@@ -35,6 +37,10 @@ int insertPos(node *root, int count)
         if (root->data == 'b')
         {
             pos_b.insert(root->pos);
+        }
+        if (root->data == '#')
+        {
+            destination_marker = root->pos;
         }
     }
     int l = insertPos(root->left, count);
@@ -390,6 +396,10 @@ void create_dfa(node *root)
     string s = "";
     for (int i = 0; i < ini.size(); i++)
     {
+        if (ini[i] == destination_marker)
+        {
+            final_states.insert(sta);
+        }
         s += to_string(ini[i]);
         s += '*';
     }
@@ -397,6 +407,8 @@ void create_dfa(node *root)
     states[s] = {sta, root->first};
     while (!q.empty())
     {
+        bool flag_a = false;
+        bool flag_b = false;
         string top = q.front();
         q.pop();
         unordered_set<int> a, b;
@@ -421,10 +433,18 @@ void create_dfa(node *root)
         vector<int> a_, b_;
         for (auto it : a)
         {
+            if (it == destination_marker)
+            {
+                flag_a = true;
+            }
             a_.push_back(it);
         }
         for (auto it : b)
         {
+            if (it == destination_marker)
+            {
+                flag_b = true;
+            }
             b_.push_back(it);
         }
         sort(b_.begin(), b_.end());
@@ -446,6 +466,10 @@ void create_dfa(node *root)
             sta++;
             states[temp_a] = {sta, a_};
             q.push(temp_a);
+            if (flag_a)
+            {
+                final_states.insert(sta);
+            }
         }
         dfa[states[top].first].first = states[temp_a].first;
         if (states.find(temp_b) == states.end())
@@ -453,6 +477,10 @@ void create_dfa(node *root)
             sta++;
             states[temp_b] = {sta, b_};
             q.push(temp_b);
+            if (flag_b)
+            {
+                final_states.insert(sta);
+            }
         }
         dfa[states[top].first].second = states[temp_b].first;
     }
@@ -472,11 +500,28 @@ int main()
     cout << y << " this is postfix" << endl;
     node *temp = create(y);
     cout << temp->data << " this is first node\n";
+    int leaf_nodes = insertPos(temp, 1);
+    computeTreeValues(temp);
+    print(temp);
+    for (auto it : follow)
+    {
+        cout << it.first << " ";
+        for (auto j : it.second)
+        {
+            cout << j << " ";
+        }
+        cout << endl;
+    }
     create_dfa(temp);
     for (auto it : dfa)
     {
         cout << it.first << " " << it.second.first << " " << it.second.second << "\n";
     }
-    print(temp);
+    for (auto it : final_states)
+    {
+        cout << it << " ";
+    }
+    cout << "\n";
+    // print(temp);
     return 0;
 }
