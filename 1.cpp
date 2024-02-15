@@ -490,6 +490,26 @@ void create_dfa(node *root)
     }
 }
 
+bool check(unordered_map<char, pair<char, char>> &dfa,unordered_set<char> &final_states,string w){
+    
+    int nu=dfa.size();
+   
+   
+    char curr='A';
+    for(auto it: w){
+        if(it=='a'){
+            curr=dfa[curr].first;
+        }
+        else curr=dfa[curr].second;
+    }
+    if(final_states.find(curr)!=final_states.end()){
+        return true;
+
+    }
+    return false;
+    
+}
+
 };
 
 int main()
@@ -529,6 +549,10 @@ int main()
         cout << it << " ";
     }
     cout << "\n";
+
+
+
+
     // print(temp);
     return 0;
 }
