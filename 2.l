@@ -1,127 +1,92 @@
 %{
 #include <stdio.h>
-#include <math.h>
 #include <string.h>
+#include <math.h>
+#include <stdbool.h>
 
-int num_records = 0;
+int num = 0;
+int w = 0;
 int num_comments = 0;
-int num_courses = 0;
-float cgpa = 0.0;
-
 char stud_id[1000];
-char course_id[1000];
-int units;
-char grade[2];
+bool correct_Student = 0;
+int course_Count = 0;
+int course_Credit = 0;
+int course_Grade = 0;
+int total_Course_Credit = 0;
+int total_Course_Grade = 0;
+int num_records = 0;
 
-struct course {
-  char id[1000];
-  int seen;
-};
-
-struct course courses[1000];
-
-void init_course(char *id) {
-  strcpy(courses[num_courses].id, id);
-  courses[num_courses].seen = 0;
-  num_courses++;
-}
-
-int find_course(char *id) {
-  for (int i = 0; i < num_courses; i++) {
-    if (strcmp(courses[i].id, id) == 0) {
-      return i;
-    }
-  }
-  return -1;
-}
-
-void update_cgpa(char grade[2]) {
-    if(grade[0]=='A')
-    cgpa += 10.0;
-    else if(grade[0]=='A' && grade[1]=='-')
-    cgpa += 8.0;
-    else if(grade[0]=='B')
-    cgpa += 6.0;
-    else if(grade[0]=='B' && grade[1]=='-')
-    cgpa += 4.0;
-    else if(grade[0]=='C')
-    cgpa += 2.0;
-   
-}
 %}
+letter [a-zA-Z]
+Alphanumeric [A-Z]+[0-9]+
+digit [0-9]
+INTEGER [+-]?[1-9][0-9]*|"0"
+FLOAT [+-]?[1-9][0-9]*\.[0-9]+|[+-]?0\.[0-9]+
 
 %s STATE1
-%s STATE2
-%s STATE3
-%s STATE4
-
+%s Course
+%s Grade
+%s Credit
+%s CourseEnd
+%s StudentID
+%s CourseOrDollar
 %%
-
-<INITIAL>{
-
-
+stop {yyterminate();}
 "//".*          { num_comments++; }
+\$ {printf("start "); BEGIN(StudentID); num_records++;}
+<StudentID>{Alphanumeric} { if (strcmp(yytext,stud_id) == 0)
+                            correct_Student = 1;
+                            else correct_Student = 0;
+                            printf(" xxxx ");}
+<StudentID>" " { }
+<StudentID>< { BEGIN(Course);}
+<STATE1>\n {printf("New ");BEGIN(INITIAL);}
+<Course>{Alphanumeric} {printf(" id ");BEGIN(Credit);}
+<Credit>[2-4] {printf(" credit ");if(correct_Student)
+                                    course_Credit = atoi(yytext);
+                                    else course_Credit = 0;
+                                    // printf("course_Credit %d ",course_Credit);
+                                     BEGIN(Grade);} 
+<Credit>" " { } 
+<Grade>" " { } 
 
-"\$"             { BEGIN STATE1; }
+<Grade>A|B|C {printf(" grade ");
+                                      if(correct_Student && yytext[0]=='A')
+                                        course_Grade = 10;
+                                      else if(correct_Student && yytext[0]=='B')
+                                        course_Grade = 6;
+                                      else if(correct_Student && yytext[0]=='C')
+                                        course_Grade = 2;
+                                      else course_Grade = 0;
+                                       BEGIN(CourseEnd);} 
+<Grade>B-|A- {printf(" grade ");
+                                      if(correct_Student && yytext[0]=='A' && yytext[1]=='-')
+                                        course_Grade = 8;
+                                      else if(correct_Student && yytext[0]=='B' && yytext[1]=='-')
+                                        course_Grade = 4;
+                                      else course_Grade = 0;
+                                      BEGIN(CourseEnd);}
+<CourseEnd>" " {}
+
+<CourseEnd>\> {printf(" end ");if(correct_Student){
+
+                                            course_Count++;
+                                            total_Course_Grade+= course_Credit*course_Grade;
+                                            total_Course_Credit +=course_Credit;
+                                            // printf("total_Course_Grade %d",course_Credit*course_Grade);
+                                            }
+                                            course_Credit=0;
+                                            course_Grade = 0;
+                                             BEGIN(CourseOrDollar);}
+<CourseOrDollar>\< { BEGIN(Course);}
+<CourseOrDollar>\$ { BEGIN(StudentID);}
+<CourseOrDollar>\n { BEGIN(INITIAL);}
 
 
-[A-Z][A-Z0-9]*    { BEGIN STATE2; strcpy(stud_id, yytext); }
-
-.|\n              { }
-
-
-<STATE1>{
-
-
-" "                { }
-
-.|\n              { BEGIN INITIAL; }
-
-}
-
-
-<STATE2>{
-
-[A-Z][A-Z0-9]*    { BEGIN STATE3; strcpy(course_id, yytext); }
-
-
-.|\n              { BEGIN INITIAL; }
-}
-
-
-
-<STATE3>{
-
-
-
-"[0-9]+"             { units = atoi(yytext); BEGIN STATE4; }
-
-
-.|\n              { BEGIN INITIAL; }
-
-}
-
-
-<STATE4>{
-
-
-
-[A-C]         { BEGIN INITIAL; grade[0] = yytext[0]; update_cgpa(grade[2]);
-                        int idx = find_course(course_id);
-                        if (idx == -1) init_course(course_id);
-                        else courses[idx].seen++; }
-[A-C][-]         { BEGIN INITIAL; grade[0] = yytext[0]; grade[1] = yytext[1]; update_cgpa(grade[2]);
-                        int idx = find_course(course_id);
-                        if (idx == -1) init_course(course_id);
-                        else courses[idx].seen++; }
-
-.|\n              { BEGIN INITIAL; }
-
-}}
 %%
-
-
-int main() {
+int main()
+{
+    extern FILE *yyin;
   FILE *data = fopen("data.txt", "r");
   FILE *input = fopen("input.txt", "r");
   FILE *output = fopen("output.txt", "w");
@@ -130,26 +95,27 @@ int main() {
     printf("Error opening files\n");
     return 1;
   }
-
-  yylex();
+  memset(stud_id, '\0', sizeof(char)*1000);
 
   fscanf(input, "%s", stud_id);
+  printf("Student ID: %s\n", stud_id);
+    yyin = fopen("data.txt", "r+");
+        yylex();
+        fclose(yyin);
+printf("Number of Credits: %d\n", total_Course_Credit);
+printf("Number of Courses: %d\n", course_Count);
+printf("Total Grade: %d\n", total_Course_Grade);
+total_Course_Grade = total_Course_Grade*100;
+float gpa = (float)total_Course_Grade/total_Course_Credit;
+int cgpa = round(gpa);
 
-  int num_courses_seen = 0;
-  for (int i = 0; i < num_courses; i++) {
-    if (courses[i].seen > 0) {
-      num_courses_seen++;
-    }
-  }
 
-  cgpa /= num_courses * units; // Average grade points
-  int rounded_cgpa = round(cgpa * 100);
-
-  fprintf(output, "@%d@%d@%d@%d#", num_records, num_comments, num_courses_seen, rounded_cgpa);
+printf("GPA: %d\n", cgpa);
+  fprintf(output, "@%d@%d@%d@%d#", num_records,num_comments, course_Count, cgpa);
 
   fclose(data);
   fclose(input);
   fclose(output);
+return 0;
 
-  return 0;
 }
