@@ -88,19 +88,19 @@ FLOAT [+-]?[1-9][0-9]*\.[0-9]+|[+-]?0\.[0-9]+
 %%
 stop {yyterminate();}
 "//".*          { num_comments++; }
-\$ {printf("start "); BEGIN(WaitForStudentID);
+\$ {printf("start "); BEGIN(StudentID);
   isRecordValid = 1;}
 
-<WaitForStudentID>" "* {  
-  BEGIN(StudentID);}
+<StudentID>" "* {  }
 
 <StudentID>{Alphanumeric} { 
   if (strcmp(yytext,stud_id) == 0)
     correct_Student = 1;
   else correct_Student = 0;
     printf(" xxxx ");BEGIN(WaitForCourse);}
-
+<StudentID>[^{Alphanumeric}] {BEGIN(INITIAL);}
 <StudentID>\n {printf("New ");BEGIN(INITIAL);} // <WaitForCourse>" "* {  } [' ']^
+
 <WaitForCourse>" "* { }
 <WaitForCourse>< { BEGIN(Course);}
 
@@ -120,7 +120,7 @@ stop {yyterminate();}
   else 
     course_Credit = 0;
     BEGIN(Grade);} 
-<Credit>[^2-4" "] {BEGIN(CourseOrDollar); }
+<Credit>[^2-4] {printf("%sdsfklndsfnkjsdfsd",yytext);BEGIN(CourseOrDollar); }
 
 <Grade>" "* { } 
 <Grade>A|B|C {
@@ -141,16 +141,18 @@ stop {yyterminate();}
   else if(correct_Student && yytext[0]=='B' && yytext[1]=='-')
     course_Grade = 4;
   else course_Grade = 0;
-  BEGIN(CourseEnd);} //<Grade>[^A-CB-A-" "] {BEGIN(CourseOrDollar); }
+  BEGIN(CourseEnd);} //
+<Grade>[^ABC" "] {BEGIN(CourseOrDollar); }
 <CourseEnd>" "* { }
 
 <CourseEnd>\> {
-  printf(" end ");
+  printf(" end");
   if(correct_Student && search(root,course_ID) == NULL){
     root = insert(root,course_ID,course_Credit,course_Grade);
     course_Count++;
     total_Course_Grade+= course_Credit*course_Grade;
     total_Course_Credit +=course_Credit;
+    printf("\n\n");
     }
   else if(correct_Student && search(root,course_ID) != NULL){
     Courses * temp = search(root,course_ID);
@@ -160,7 +162,7 @@ stop {yyterminate();}
     temp->grade = course_Grade;
     temp->credit = course_Credit;
     total_Course_Grade += temp->credit*temp->grade;
-    printf("Duplicate Course\n");
+    printf("Duplicate Course\n\n");
   }
   if(isRecordValid == 1){
   num_records++;
