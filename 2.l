@@ -141,9 +141,9 @@ stop {yyterminate();}
   else if(correct_Student && yytext[0]=='B' && yytext[1]=='-')
     course_Grade = 4;
   else course_Grade = 0;
-  BEGIN(CourseEnd);}
-<Grade>[^A-CB-A-" "] {BEGIN(CourseOrDollar); }
-<CourseEnd>" "* {}
+  BEGIN(CourseEnd);} //<Grade>[^A-CB-A-" "] {BEGIN(CourseOrDollar); }
+<CourseEnd>" "* { }
+
 <CourseEnd>\> {
   printf(" end ");
   if(correct_Student && search(root,course_ID) == NULL){
