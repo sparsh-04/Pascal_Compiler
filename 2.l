@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <stdbool.h>
+#include <stdbool.h> 
 typedef struct Courses {
   char data;
   int credit;
@@ -64,6 +64,7 @@ int course_Grade = 0;
 int total_Course_Credit = 0;
 int total_Course_Grade = 0;
 int num_records = 0;
+int isRecordValid = -1;
 Courses* root;
 %}
 letter [a-zA-Z]
@@ -87,7 +88,8 @@ FLOAT [+-]?[1-9][0-9]*\.[0-9]+|[+-]?0\.[0-9]+
 %%
 stop {yyterminate();}
 "//".*          { num_comments++; }
-\$ {printf("start "); BEGIN(WaitForStudentID); num_records++;}
+\$ {printf("start "); BEGIN(WaitForStudentID);
+  isRecordValid = 1;}
 
 <WaitForStudentID>" "* {  
   BEGIN(StudentID);}
@@ -98,18 +100,19 @@ stop {yyterminate();}
   else correct_Student = 0;
     printf(" xxxx ");BEGIN(WaitForCourse);}
 
-<StudentID>\n {printf("New ");BEGIN(INITIAL);}
-
-<WaitForCourse>" "* {  }
-
+<StudentID>\n {printf("New ");BEGIN(INITIAL);} // <WaitForCourse>" "* {  } [' ']^
+<WaitForCourse>" "* { }
 <WaitForCourse>< { BEGIN(Course);}
 
+<Course>" "* {}
 <Course>{Alphanumeric} {
   printf(" id ");BEGIN(Credit); 
   memset(course_ID, '\0', sizeof(char)*1000);
   strcpy(course_ID,yytext);}
+<Course>\n {printf("New ");BEGIN(INITIAL);}
+<Course>[^{Alphanumeric}" "] {BEGIN(CourseOrDollar); }
 
-
+<Credit>" "* { }
 <Credit>[2-4] {
   printf(" credit ");
   if(correct_Student)
@@ -117,10 +120,9 @@ stop {yyterminate();}
   else 
     course_Credit = 0;
     BEGIN(Grade);} 
+<Credit>[^2-4" "] {BEGIN(CourseOrDollar); }
 
-<Credit>" " { } 
-<Grade>" " { } 
-
+<Grade>" "* { } 
 <Grade>A|B|C {
   printf(" grade ");
   if(correct_Student && yytext[0]=='A')
@@ -140,8 +142,8 @@ stop {yyterminate();}
     course_Grade = 4;
   else course_Grade = 0;
   BEGIN(CourseEnd);}
-<CourseEnd>" " {}
-
+<Grade>[^A-CB-A-" "] {BEGIN(CourseOrDollar); }
+<CourseEnd>" "* {}
 <CourseEnd>\> {
   printf(" end ");
   if(correct_Student && search(root,course_ID) == NULL){
@@ -159,6 +161,10 @@ stop {yyterminate();}
     temp->credit = course_Credit;
     total_Course_Grade += temp->credit*temp->grade;
     printf("Duplicate Course\n");
+  }
+  if(isRecordValid == 1){
+  num_records++;
+  isRecordValid = -1;
   }
 course_Credit=0;
 course_Grade = 0;
@@ -195,15 +201,14 @@ int main()
   fscanf(input, "%s", stud_id);
   printf("Student ID: %s\n", stud_id);
     yyin = fopen("data.txt", "r+");
-        yylex();
-        fclose(yyin);
+    yylex();
+    fclose(yyin);
 printf("Number of Credits: %d\n", total_Course_Credit);
 printf("Number of Courses: %d\n", course_Count);
 printf("Total Grade: %d\n", total_Course_Grade);
 total_Course_Grade = total_Course_Grade*100;
 float gpa = (float)total_Course_Grade/total_Course_Credit;
-int cgpa = round(gpa);
-
+int cgpa = round(gpa); 
 
 printf("GPA: %d\n", cgpa);
   fprintf(output, "@%d@%d@%d@%d#", num_records,num_comments, course_Count, cgpa);
