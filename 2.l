@@ -38,6 +38,10 @@ Courses* insert(Courses * root, char *word, int credit, int grade) {
   return root;
 }
 
+int yywrap(){
+  return 1;
+}
+
 Courses* search(Courses * root, char word[]) {
   Courses* temp = root;
   for (int i=0; word[i] != '\0'; i++) {
@@ -113,17 +117,28 @@ stop {yyterminate();}
 <Course>[^{Alphanumeric}" "] {BEGIN(CourseOrDollar); }
 
 <Credit>" "* { }
-<Credit>[2-4] {
+<Credit>[2-4]" " {
   printf(" credit ");
   if(correct_Student)
     course_Credit = atoi(yytext);
   else 
     course_Credit = 0;
     BEGIN(Grade);} 
-<Credit>[^2-4] {printf("%sdsfklndsfnkjsdfsd",yytext);BEGIN(CourseOrDollar); }
 
-<Grade>" "* { } 
-<Grade>A|B|C {
+<Credit>[^" "] {
+  printf("%sdsfklndsfnkjsdfsd",yytext);BEGIN(CourseOrDollar);
+}//<Credit>[^234] {printf("%sdsfklndsfnkjsdfsd",yytext);BEGIN(CourseOrDollar); }
+
+<Grade>" "* { } //
+<Grade>[ABC][^->" "] {
+  BEGIN(CourseOrDollar);
+}//<Grade>[A-Za-z][A-Za-z] {BEGIN(CourseOrDollar);}
+
+<Grade>[AB][-][^>" "] {
+  BEGIN(CourseOrDollar);
+}
+
+<Grade>[ABC]" "* {
   printf(" grade ");
   if(correct_Student && yytext[0]=='A')
     course_Grade = 10;
@@ -134,16 +149,23 @@ stop {yyterminate();}
   else course_Grade = 0;
     BEGIN(CourseEnd);} 
 
+
 <Grade>B-|A- {
+  printf("%s", yytext);
   printf(" grade ");
   if(correct_Student && yytext[0]=='A' && yytext[1]=='-')
     course_Grade = 8;
   else if(correct_Student && yytext[0]=='B' && yytext[1]=='-')
     course_Grade = 4;
   else course_Grade = 0;
-  BEGIN(CourseEnd);} //
-<Grade>[^ABC" "] {BEGIN(CourseOrDollar); }
-<CourseEnd>" "* { }
+  BEGIN(CourseEnd);} 
+
+<Grade>[^" "] {
+  BEGIN(CourseOrDollar);
+}//<Grade>[^ABC" "] {BEGIN(CourseOrDollar); }
+<CourseEnd>" "* {
+   printf("sdffsadf");
+ }
 
 <CourseEnd>\> {
   printf(" end");
@@ -209,8 +231,15 @@ printf("Number of Credits: %d\n", total_Course_Credit);
 printf("Number of Courses: %d\n", course_Count);
 printf("Total Grade: %d\n", total_Course_Grade);
 total_Course_Grade = total_Course_Grade*100;
-float gpa = (float)total_Course_Grade/total_Course_Credit;
-int cgpa = round(gpa); 
+float gpa;
+int cgpa;
+
+if(!total_Course_Credit){
+  cgpa = 0;
+}else{
+  gpa = (float)total_Course_Grade/total_Course_Credit;
+  cgpa = round(gpa);
+}
 
 printf("GPA: %d\n", cgpa);
   fprintf(output, "@%d@%d@%d@%d#", num_records,num_comments, course_Count, cgpa);
