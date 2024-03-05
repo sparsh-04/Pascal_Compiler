@@ -92,7 +92,9 @@ FLOAT [+-]?[1-9][0-9]*\.[0-9]+|[+-]?0\.[0-9]+
 %%
 stop {yyterminate();}
 "//".*          { num_comments++; }
-\$ {printf("start "); BEGIN(StudentID);
+\$ {
+  // printf("start "); 
+  BEGIN(StudentID);
   isRecordValid = 1;}
 
 <StudentID>" "* {  }
@@ -101,24 +103,29 @@ stop {yyterminate();}
   if (strcmp(yytext,stud_id) == 0)
     correct_Student = 1;
   else correct_Student = 0;
-    printf(" xxxx ");BEGIN(WaitForCourse);}
+    // printf(" xxxx ");BEGIN(WaitForCourse);
+    }
 <StudentID>[^{Alphanumeric}] {BEGIN(INITIAL);}
-<StudentID>\n {printf("New ");BEGIN(INITIAL);} // <WaitForCourse>" "* {  } [' ']^
+<StudentID>\n {
+  // printf("New ");
+  BEGIN(INITIAL);} // <WaitForCourse>" "* {  } [' ']^
 
 <WaitForCourse>" "* { }
 <WaitForCourse>< { BEGIN(Course);}
 
 <Course>" "* {}
 <Course>{Alphanumeric} {
-  printf(" id ");BEGIN(Credit); 
+  // printf(" id ");BEGIN(Credit); 
   memset(course_ID, '\0', sizeof(char)*1000);
   strcpy(course_ID,yytext);}
-<Course>\n {printf("New ");BEGIN(INITIAL);}
+<Course>\n {
+  // printf("New ");
+BEGIN(INITIAL);}
 <Course>[^{Alphanumeric}" "] {BEGIN(CourseOrDollar); }
 
 <Credit>" "* { }
 <Credit>[2-4]" " {
-  printf(" credit ");
+  // printf(" credit ");
   if(correct_Student)
     course_Credit = atoi(yytext);
   else 
@@ -126,7 +133,7 @@ stop {yyterminate();}
     BEGIN(Grade);} 
 
 <Credit>[^" "] {
-  printf("%sdsfklndsfnkjsdfsd",yytext);BEGIN(CourseOrDollar);
+  // printf("%sdsfklndsfnkjsdfsd",yytext);BEGIN(CourseOrDollar);
 }//<Credit>[^234] {printf("%sdsfklndsfnkjsdfsd",yytext);BEGIN(CourseOrDollar); }
 
 <Grade>" "* { } //
@@ -139,7 +146,7 @@ stop {yyterminate();}
 }
 
 <Grade>[ABC]" "* {
-  printf(" grade ");
+  // printf(" grade ");
   if(correct_Student && yytext[0]=='A')
     course_Grade = 10;
   else if(correct_Student && yytext[0]=='B')
@@ -151,8 +158,8 @@ stop {yyterminate();}
 
 
 <Grade>B-|A- {
-  printf("%s", yytext);
-  printf(" grade ");
+  // printf("%s", yytext);
+  // printf(" grade ");
   if(correct_Student && yytext[0]=='A' && yytext[1]=='-')
     course_Grade = 8;
   else if(correct_Student && yytext[0]=='B' && yytext[1]=='-')
@@ -164,17 +171,17 @@ stop {yyterminate();}
   BEGIN(CourseOrDollar);
 }//<Grade>[^ABC" "] {BEGIN(CourseOrDollar); }
 <CourseEnd>" "* {
-   printf("sdffsadf");
+  //  printf("sdffsadf");
  }
 
 <CourseEnd>\> {
-  printf(" end");
+  // printf(" end");
   if(correct_Student && search(root,course_ID) == NULL){
     root = insert(root,course_ID,course_Credit,course_Grade);
     course_Count++;
     total_Course_Grade+= course_Credit*course_Grade;
     total_Course_Credit +=course_Credit;
-    printf("\n\n");
+    // printf("\n\n");
     }
   else if(correct_Student && search(root,course_ID) != NULL){
     Courses * temp = search(root,course_ID);
@@ -184,7 +191,7 @@ stop {yyterminate();}
     temp->grade = course_Grade;
     temp->credit = course_Credit;
     total_Course_Grade += temp->credit*temp->grade;
-    printf("Duplicate Course\n\n");
+    // printf("Duplicate Course\n\n");
   }
   if(isRecordValid == 1){
   num_records++;
@@ -217,19 +224,19 @@ int main()
   FILE *output = fopen("output.txt", "w");
 
   if (!data || !input || !output) {
-    printf("Error opening files\n");
+    // printf("Error opening files\n");
     return 1;
   }
   memset(stud_id, '\0', sizeof(char)*1000);
   root = makeTree('\0');
   fscanf(input, "%s", stud_id);
-  printf("Student ID: %s\n", stud_id);
+  // printf("Student ID: %s\n", stud_id);
     yyin = fopen("data.txt", "r+");
     yylex();
     fclose(yyin);
-printf("Number of Credits: %d\n", total_Course_Credit);
-printf("Number of Courses: %d\n", course_Count);
-printf("Total Grade: %d\n", total_Course_Grade);
+// printf("Number of Credits: %d\n", total_Course_Credit);
+// printf("Number of Courses: %d\n", course_Count);
+// printf("Total Grade: %d\n", total_Course_Grade);
 total_Course_Grade = total_Course_Grade*100;
 float gpa;
 int cgpa;
@@ -241,7 +248,7 @@ if(!total_Course_Credit){
   cgpa = round(gpa);
 }
 
-printf("GPA: %d\n", cgpa);
+// printf("GPA: %d\n", cgpa);
   fprintf(output, "@%d@%d@%d@%d#", num_records,num_comments, course_Count, cgpa);
 
   fclose(data);
