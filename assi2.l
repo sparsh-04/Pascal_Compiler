@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#define YY_SKIP_YYWRAP
 
 int lineNum = 1;
 int maxTokens = 0;
@@ -22,6 +23,9 @@ void addToken(const char *token, const char *tokenType) {
     maxTokens++;
     tokenArray = (TokenInfo*)realloc(tokenArray, maxTokens * sizeof(TokenInfo));
     tokenArray[maxTokens - 1] = newToken;
+}
+int yywrap() {
+    return 1;
 }
 
 %}
