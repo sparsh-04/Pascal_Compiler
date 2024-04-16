@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "a.tab.h"
+
 #define YY_SKIP_YYWRAP
 
 int lineNum = 1;
@@ -27,12 +29,19 @@ void addToken(const char *token, const char *tokenType) {
 int yywrap() {
     return 1;
 }
+int yylex();
+// int yyerror(const char *s) {
+//     // fprintf(stderr, "%s\n", s);
+//     // return 0;
 
+// }
 %}
 
 keywords program|integer|real|boolean|char|var|to|downto|if|else|while|for|do|array|and|or|not|begin|end|read|write
 punctuator [\[\]\(\),;:]
-operators [+|\-|\*|/|=|<>|<|>|<=|>=|and|or|not]
+Arithmetic_operators [+|\-|\*|/|\%]
+Relational_operators [=|<>|<|>|<=|>=]
+Boolean_operators [and|or|not]
 identifier [a-zA-Z][a-zA-Z0-9]*
 
 %%
@@ -45,8 +54,14 @@ identifier [a-zA-Z][a-zA-Z0-9]*
     addToken(yytext, "Punctuator");
 }
 
-{operators} {
-    addToken(yytext, "Operator");
+{Arithmetic_operators} {
+    addToken(yytext, "Arithmetic Operators");
+}
+{Relational_operators} {
+    addToken(yytext, "Relational Operators");
+}
+{Boolean_operators} {
+    addToken(yytext, "Boolean Operators");
 }
 
 {identifier} {
