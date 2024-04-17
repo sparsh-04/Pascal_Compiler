@@ -1,0 +1,47 @@
+Last login: Tue Apr 16 16:21:06 on console
+nana%                                                                           (base) sparshkhandelwal@Sparshs-MacBook-Air Compilers_1 % nano
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  UW PICO 5.09                       New Buffer                       Modified  
+
+  if i > 10 then
+  begin
+    i := 10;
+    i := i - 1;
+    write(i);
+  end
+  else
+  begin
+    i := 20;
+    write(i);
+  end;
+end.
+    
+    
+    
+     
+  
+  
+    
+
+^G Get Help  ^O WriteOut  ^R Read File ^Y Prev Pg   ^K Cut Text  ^C Cur Pos   
+^X Exit      ^J Justify   ^W Where is  ^V Next Pg   ^U UnCut Text^T To Spell  

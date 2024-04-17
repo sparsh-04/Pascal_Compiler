@@ -6,15 +6,15 @@ void yyerror(char *s);
 int yylex(void);
 %}
 
-%token INTEGER REAL BOOLEAN CHAR VAR TO DOWNTO IF ELSE WHILE FOR DO ARRAY AND OR NOT BEGIN END READ WRITE
+%token PROGRAM INTEGER REAL BOOLEAN CHAR VAR TO DOWNTO IF THEN ELSE WHILE FOR DO ARRAY AND OR NOT BEGINI END READ WRITE ID PUNCTUATOR ARITHMETIC_OPERATOR RELATIONAL_OPERATOR BOOLEAN_OPERATOR
 %%
 
-program: 'program' ID ';' declaration 'begin' statement 'end' '.' ;
+program: PROGRAM ID PUNCTUATOR declaration BEGINI statement END PUNCTUATOR ;
 
 
-declaration: 'var' var_list ':' type ';' ;
+declaration: VAR var_list PUNCTUATOR type PUNCTUATOR ;
 
-var_list: ID ',' var_list
+var_list: ID PUNCTUATOR var_list
         | ID
         ;
 statement: assignment_statement
@@ -25,44 +25,37 @@ statement: assignment_statement
         | write_statement
         ;
 
-assignment_statement: ID ':=' expression ';' ;
+assignment_statement: ID ARITHMETIC_OPERATOR expression PUNCTUATOR ;
 
-if_statement: 'if' condition 'then' statement 'else' statement ';' ;
+if_statement: IF condition THEN statement ELSE statement PUNCTUATOR ;
 
-while_statement: 'while' condition 'do' statement ';' ;
+while_statement: WHILE condition DO statement PUNCTUATOR ;
 
-for_statement: 'for' ID ':=' expression 'to' expression 'do' statement ';' ;
+for_statement: FOR ID ARITHMETIC_OPERATOR expression TO expression DO statement PUNCTUATOR ;
 
-read_statement: 'read' '(' ID ')' ';' ;
+read_statement: READ PUNCTUATOR ID PUNCTUATOR PUNCTUATOR ;
 
-write_statement: 'write' '(' ID ')' ';' ;
+write_statement: WRITE PUNCTUATOR ID PUNCTUATOR PUNCTUATOR ;
 
-condition: expression '<' expression
-        | expression '>' expression
-        | expression '=' expression
-        | expression '<>' expression
-        | expression '<=' expression
-        | expression '>=' expression
+condition: expression RELATIONAL_OPERATOR expression
+        ;
+expression: term ARITHMETIC_OPERATOR term
         ;
 
-expression: term '+' term
-        | term '-' term
-        ;
-
-term: factor '*' factor
-    |   factor '/' factor
+term: factor ARITHMETIC_OPERATOR factor
     ;
 
 factor: ID
-        | NUMBER
+        | INTEGER
         ;
 
 
+
 type:
-    'integer'
-    | 'real'
-    | 'char'
-    | 'boolean'
+    INTEGER
+    | REAL
+    | CHAR
+    | BOOLEAN
     ;
 %%
 

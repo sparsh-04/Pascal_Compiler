@@ -37,7 +37,7 @@ int yylex();
 // }
 %}
 
-keywords program|integer|real|boolean|char|var|to|downto|if|else|while|for|do|array|and|or|not|begin|end|read|write
+keywords program|integer|real|boolean|char|var|to|downto|if|then|else|while|for|do|array|begin|end|read|write
 punctuator [\[\]\(\),;:]
 Arithmetic_operators [+|\-|\*|/|\%]
 Relational_operators [=|<>|<|>|<=|>=]
@@ -48,24 +48,100 @@ identifier [a-zA-Z][a-zA-Z0-9]*
 
 {keywords} {
     addToken(yytext, "Keyword");
+    if(strcmp(yytext, "program") == 0){
+        printf("Progrrwfwefewfam %d",strcmp(yytext, "program"));
+        return PROGRAM;
+    }
+        
+    if(strcmp(yytext, "integer") == 0){
+        return INTEGER;
+    }
+    if(strcmp(yytext, "real") == 0){
+        return REAL;
+    }
+    if(strcmp(yytext, "boolean") == 0){
+        return BOOLEAN;
+    }
+    if(strcmp(yytext, "char") == 0){
+        return CHAR;
+    }
+    if( strcmp(yytext, "var") == 0){
+        return VAR;
+    }
+    if(strcmp(yytext, "to") == 0){
+        return TO;
+    }
+    if(strcmp(yytext, "downto") == 0){
+        return DOWNTO;
+    }
+    if( strcmp(yytext, "if") == 0){
+        return IF;
+    }
+    if(strcmp(yytext, "then") == 0){
+        return THEN;
+    }
+    if(strcmp(yytext, "else") == 0){
+        return ELSE;
+    }
+    if(strcmp(yytext, "while") == 0){
+        return WHILE;
+    }
+    if(strcmp(yytext, "for") == 0){
+        return FOR;
+    }
+    if(strcmp(yytext, "do") == 0){
+        return DO;
+    }
+    if(strcmp(yytext, "array") == 0){
+        return ARRAY;
+    }
+    // if(strcmp(yytext, "and") == 0){
+    //     return AND;
+    // }
+    // if(yytext == "or"){
+    //     return OR;
+    // }
+    // if(yytext == "not"){
+    //     return NOT;
+    // }
+    if(strcmp(yytext, "begin") == 0){
+        return BEGINI;
+    }
+    if(strcmp(yytext, "end") == 0){
+        return END;
+    }
+    if(strcmp(yytext, "read") == 0){
+        return READ;
+    }
+    if(strcmp(yytext, "write") == 0 ){
+        return WRITE;
+    }
+
 }
 
 {punctuator} {
     addToken(yytext, "Punctuator");
+    return PUNCTUATOR;
 }
 
 {Arithmetic_operators} {
     addToken(yytext, "Arithmetic Operators");
+        return ARITHMETIC_OPERATOR;
+
 }
 {Relational_operators} {
     addToken(yytext, "Relational Operators");
+    return RELATIONAL_OPERATOR;
 }
 {Boolean_operators} {
     addToken(yytext, "Boolean Operators");
+    return BOOLEAN_OPERATOR;
 }
 
 {identifier} {
     addToken(yytext, "Identifier");
+    printf("Identifier %s\n",yytext);
+    return ID;
 }
 
 \n {
@@ -82,6 +158,7 @@ int main() {
     yyin = fopen("code.txt", "r+");
     yylex();
     fclose(yyin);
+    printf("Total Tokens: %d\n", maxTokens);
     for (int i = 0; i < maxTokens; i++) {
         printf("Line %d: Token '%s' - Type '%s'\n", tokenArray[i].lineNumber, tokenArray[i].token, tokenArray[i].tokenType);
     }
