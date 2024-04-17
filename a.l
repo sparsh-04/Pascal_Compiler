@@ -36,24 +36,28 @@ int yylex();
 
 // }
 %}
+%option caseless
 
-keywords program|integer|real|boolean|char|var|to|downto|if|then|else|while|for|do|array|begin|end|read|write
+keywords program|integer|real|boolean|char|var|to|downto|if|then|else|while|for|do|array|begin|end|read|write|of
 punctuator [\[\]\(\),;:]
 Arithmetic_operators [+|\-|\*|/|\%]
 Relational_operators [=|<>|<|>|<=|>=]
 Boolean_operators [and|or|not]
 identifier [a-zA-Z][a-zA-Z0-9]*
-
+Number [0-9]+
 %%
 
 {keywords} {
     addToken(yytext, "Keyword");
     if(strcmp(yytext, "program") == 0){
-        printf("Progrrwfwefewfam %d",strcmp(yytext, "program"));
+        // printf("Progrrwfwefewfam %d",strcmp(yytext, "program"));
         return PROGRAM;
     }
         
     if(strcmp(yytext, "integer") == 0){
+        return INTEGER;
+    }
+    if(strcmp(yytext, "Integer") == 0){
         return INTEGER;
     }
     if(strcmp(yytext, "real") == 0){
@@ -116,9 +120,16 @@ identifier [a-zA-Z][a-zA-Z0-9]*
     if(strcmp(yytext, "write") == 0 ){
         return WRITE;
     }
+    if(strcmp(yytext, "of") == 0){
+        return OF;
+    }
 
 }
-
+"." { //printf("DOT");
+return DOT;}
+"//".* {
+    // printf("Comment %s\n",yytext);
+    }
 {punctuator} {
     addToken(yytext, "Punctuator");
     return PUNCTUATOR;
@@ -140,10 +151,16 @@ identifier [a-zA-Z][a-zA-Z0-9]*
 
 {identifier} {
     addToken(yytext, "Identifier");
-    printf("Identifier %s\n",yytext);
+    // printf("Identifier %s\n",yytext);
     return ID;
 }
+{Number} {
+    addToken(yytext, "Number");
+    // printf("Number %s\n",yytext);
+    return NUMBER;
+}
 
+[\t ] ;
 \n {
     lineNum++;
 }
@@ -152,16 +169,16 @@ identifier [a-zA-Z][a-zA-Z0-9]*
 
 %%
 
-int main() {
-    extern FILE *yyin;
-    FILE *code = fopen("code.txt", "r");
-    yyin = fopen("code.txt", "r+");
-    yylex();
-    fclose(yyin);
-    printf("Total Tokens: %d\n", maxTokens);
-    for (int i = 0; i < maxTokens; i++) {
-        printf("Line %d: Token '%s' - Type '%s'\n", tokenArray[i].lineNumber, tokenArray[i].token, tokenArray[i].tokenType);
-    }
-    free(tokenArray);
-    return 0;
-}
+// int main() {
+//     extern FILE *yyin;
+//     FILE *code = fopen("code.txt", "r");
+//     yyin = fopen("code.txt", "r+");
+//     yylex();
+//     fclose(yyin);
+//     printf("Total Tokens: %d\n", maxTokens);
+//     for (int i = 0; i < maxTokens; i++) {
+//         printf("Line %d: Token '%s' - Type '%s'\n", tokenArray[i].lineNumber, tokenArray[i].token, tokenArray[i].tokenType);
+//     }
+//     free(tokenArray);
+//     return 0;
+// }
