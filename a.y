@@ -12,7 +12,11 @@ int yylex(void);
 program: PROGRAM ID PUNCTUATOR declaration BEGINI statement END PUNCTUATOR ;
 
 
-declaration: VAR var_list PUNCTUATOR type PUNCTUATOR ;
+declaration: VAR var_lists;
+
+var_lists :var_list PUNCTUATOR type PUNCTUATOR var_lists 
+                |
+                ;
 
 var_list: var_list PUNCTUATOR ID
         | ID
