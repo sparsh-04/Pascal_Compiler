@@ -38,13 +38,14 @@ int yylex();
 %}
 %option caseless
 
-keywords program|integer|real|boolean|char|var|to|downto|if|then|else|while|for|do|array|begin|end|read|write|of
+keywords program|integer|real|boolean|char|var|to|downto|if|then|else|while|for|do|array|begin|end|read|write|writeln|of
 punctuator [\[\]\(\),;:]
 Arithmetic_operators [+|\-|\*|/|\%]
 Relational_operators [=|<>|<|>|<=|>=]
 Boolean_operators [and|or|not]
 identifier [a-zA-Z][a-zA-Z0-9]*
 Number [0-9]+
+printStatement \".*\"
 %%
 
 {keywords} {
@@ -55,6 +56,7 @@ Number [0-9]+
     }
         
     if(strcmp(yytext, "integer") == 0){
+        printf("integer");
         return INTEGER;
     }
     if(strcmp(yytext, "Integer") == 0){
@@ -70,6 +72,7 @@ Number [0-9]+
         return CHAR;
     }
     if( strcmp(yytext, "var") == 0){
+        printf("var");
         return VAR;
     }
     if(strcmp(yytext, "to") == 0){
@@ -120,10 +123,17 @@ Number [0-9]+
     if(strcmp(yytext, "write") == 0 ){
         return WRITE;
     }
+    if(strcmp(yytext, "writeln") == 0 ){
+        return WRITELN;
+    }
     if(strcmp(yytext, "of") == 0){
         return OF;
     }
 
+}
+{printStatement} {
+    printf("Print Statement");
+  return PrintStatement;
 }
 "." { //printf("DOT");
 return DOT;}
@@ -132,6 +142,7 @@ return DOT;}
     }
 {punctuator} {
     addToken(yytext, "Punctuator");
+    printf("Punctuator %s\n",yytext);
     return PUNCTUATOR;
 }
 
@@ -151,12 +162,12 @@ return DOT;}
 
 {identifier} {
     addToken(yytext, "Identifier");
-    // printf("Identifier %s\n",yytext);
+    printf("Identifier %s\n",yytext);
     return ID;
 }
 {Number} {
     addToken(yytext, "Number");
-    // printf("Number %s\n",yytext);
+    printf("Number %s\n",yytext);
     return NUMBER;
 }
 
