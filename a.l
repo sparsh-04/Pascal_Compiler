@@ -1,3 +1,4 @@
+%option caseless
 %{
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,14 +37,13 @@ int yylex();
 
 // }
 %}
-%option caseless
 
 keywords program|integer|real|boolean|char|var|to|downto|if|then|else|while|for|do|array|begin|end|read|write|writeln|of
 punctuator [\[\]\(\),;:\.]
 Arithmetic_operators [+|\-|\*|/|\%]
 Relational_operators "="|"<>"|"<"|">"|"<="|">="
 Boolean_operators [and|or|not]
-identifier [a-zA-Z][a-zA-Z0-9]*
+identifier [a-zA-Z_][a-zA-Z0-9_]*
 Number "-"?[0-9]+
 printStatement \".*\"
 %%
