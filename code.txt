@@ -1,21 +1,49 @@
-program ArraySum ;
-var
-numbers : array [1..10] of Integer ;
-i , sum : Integer ;
-begin
-// Read 10 values into the array
-writeln ( " Enter 10 integer values : ");
-for i := 1 to 10 do
-begin
-read ( numbers [ i ]) ;
-end ;
-// Calculate the sum of the values in the array
-sum := 0;
-for i := 1 to 10 do
-begin
-sum := sum + numbers [i ];
-end ;
-// Display the sum
-write (" The sum is : ");
-write ( sum );
-end
+PROGRAM binary_search;
+
+var  arr:ARRAY[1..100] OF Integer; 
+      mid,low,high,search:integer; 
+     i,n:Integer; 
+     found:boolean;
+BEGIN  
+     writeln("Binary search");
+     writeln("array lengt:");
+     read(n); 
+     writeln("Enter ",n," numbers: ");
+     FOR i:=1 TO n DO 
+     BEGIN 
+          read(arr[i]); 
+     END; 
+     writeln("what number do you want to search?");
+     read(search); 
+     low:=1; 
+     high:=n; 
+     found:=false; 
+     while((found=true) OR (high<low))
+     DO
+           mid:=trunc(low+high) DIV 2; 
+           IF (search<arr[mid]) THEN 
+           begin
+           high:=mid-1; 
+           end;
+           IF (search>arr[mid]) THEN 
+           begin
+           low:=mid+1; 
+           end;
+           IF (search=arr[mid]) THEN 
+           begin
+           found:=true ;
+           end
+           ELSE 
+           begin
+           found:=false; 
+           end;
+        end;
+     IF found=true THEN 
+     begin
+     writeln("ELEMENT FOUND");
+     end
+     ELSE
+     begin
+      writeln("ELEMENT NOT FOUND");
+      end;
+END.

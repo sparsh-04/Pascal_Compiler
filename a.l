@@ -39,12 +39,12 @@ int yylex();
 %option caseless
 
 keywords program|integer|real|boolean|char|var|to|downto|if|then|else|while|for|do|array|begin|end|read|write|writeln|of
-punctuator [\[\]\(\),;:]
+punctuator [\[\]\(\),;:\.]
 Arithmetic_operators [+|\-|\*|/|\%]
-Relational_operators [=|<>|<|>|<=|>=]
+Relational_operators "="|"<>"|"<"|">"|"<="|">="
 Boolean_operators [and|or|not]
 identifier [a-zA-Z][a-zA-Z0-9]*
-Number [0-9]+
+Number "-"?[0-9]+
 printStatement \".*\"
 %%
 
@@ -136,12 +136,39 @@ printStatement \".*\"
   return PrintStatement;
 }
 "." { //printf("DOT");
+
 return DOT;}
 "//".* {
     // printf("Comment %s\n",yytext);
     }
 {punctuator} {
     addToken(yytext, "Punctuator");
+    if(strcmp(yytext,"[")==0){
+    return '[';
+    }
+    if(strcmp(yytext,"]")==0){
+    return ']';
+    }
+    if(strcmp(yytext,"(")==0){
+    return '(';
+    }
+    if(strcmp(yytext,")")==0){
+    return ')';
+    }
+    if(strcmp(yytext,";")==0){
+    return ';';
+    }
+    if(strcmp(yytext,":")==0){
+    return ':';
+    }
+    if(strcmp(yytext,",")==0){
+    return ',';
+    }
+    if(strcmp(yytext,".")==0){
+        printf("egw");
+    return '.';
+    }
+
     printf("Punctuator %s\n",yytext);
     return PUNCTUATOR;
 }
@@ -152,6 +179,10 @@ return DOT;}
 
 }
 {Relational_operators} {
+     if(strcmp(yytext,"=")==0){
+    return '=';
+    }
+    printf("Relational Operators %s\n",yytext);
     addToken(yytext, "Relational Operators");
     return RELATIONAL_OPERATOR;
 }
