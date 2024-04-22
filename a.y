@@ -5,11 +5,14 @@
 void yyerror(char *s);
 int yylex(void);
 %}
+%left '+' '-'
+%left '*' '/' '%'
+%left BOOLEAN_OPERATOR
 
 %token PROGRAM INTEGER REAL BOOLEAN CHAR VAR TO DOWNTO IF THEN ELSE WHILE FOR DO ARRAY AND OR NOT BEGINI END READ WRITE WRITELN ID PUNCTUATOR ARITHMETIC_OPERATOR RELATIONAL_OPERATOR BOOLEAN_OPERATOR OF DOT NUMBER PrintStatement OpenB CloseB
 %%
 
-program: PROGRAM ID ';' declaration BEGINI statements END DOT {printf("Success");return 0;};
+program: PROGRAM ID ';' declaration BEGINI statements END '.' {printf("valid input");return 0;};
 
 
 declaration: VAR var_lists;
@@ -40,8 +43,8 @@ if_statement: IF condition THEN BEGINI statements END ELSE BEGINI statements END
 
 while_statement: WHILE condition DO BEGINI statements END ';' ;
 
-for_statement: FOR ID ':' '=' expression TO expression DO BEGINI statements END ';' 
-            | FOR ID ':' '=' expression DOWNTO expression DO BEGINI statements END ';'
+for_statement: FOR variable ':' '=' expression TO expression DO BEGINI statements END ';' 
+            | FOR variable ':' '=' expression DOWNTO expression DO BEGINI statements END ';' ;
 
 read_statement: READ '(' variable ')' ';' ;
 
@@ -55,43 +58,60 @@ condition: expression RELATIONAL_OPERATOR expression
         | NOT BOOLEAN 
         | '(' condition ')'
         | expression '=' expression
+        | condition BOOLEAN_OPERATOR condition
         ;
-expression: expression ARITHMETIC_OPERATOR expression
+
+
+expression: expression '+' expression
+          | expression '-' expression
+          | expression '*' expression
+          | expression '/' expression
+          | expression '%' expression
           | '(' expression ')' 
           | '{' expression '}'
           | '[' expression ']'
           | variable
           | NUMBER
+          |'-' NUMBER
         ;
 
-variable: ID
-        | ID '[' ID ']';
-        | ID '[' NUMBER ']';
+variable: ID '[' expression']'
+        | ID 
+        |'('ID')'
+        |'['ID']'
+        |'{'ID'}';
 
 type:
     INTEGER
     | REAL
     | CHAR
     | BOOLEAN
-    | ARRAY '[' NUMBER DOT DOT NUMBER ']' OF type
+    | ARRAY '[' NUMBER '.' '.' NUMBER ']' OF type
     ;
 %%
 
 void yyerror(char *s) {
-    fprintf(stderr, "Error: %s\n", s);
+    fprintf(stderr, "syntax error" );
 }
 
-int main(void) {
+int main(int argc, char *argv[]) {
+    if (argc != 2) {
+        printf("Usage: %s <input_file>\n", argv[0]);
+        return 1;
+    }
+
+    FILE *code = fopen(argv[1], "r");
+    if (code == NULL) {
+        perror("Error opening file");
+        return 1;
+    }
+
     extern FILE *yyin;
-    FILE *code = fopen("code.txt", "r");
-    yyin = fopen("code.txt", "r+");
-//     yylex();
+    yyin = code;
+
     yyparse();
+
     fclose(yyin);
-//     printf("Total Tokens: %d\n", maxTokens);
-//     for (int i = 0; i < maxTokens; i++) {
-//         printf("Line %d: Token '%s' - Type '%s'\n", tokenArray[i].lineNumber, tokenArray[i].token, tokenArray[i].tokenType);
-//     }
-//     free(tokenArray);
+
     return 0;
 }
