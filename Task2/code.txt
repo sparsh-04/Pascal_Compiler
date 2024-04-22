@@ -1,35 +1,168 @@
-program InsertionSortReal;
-Var
-  numbers: array[1..10] of Real; // Array to store 10 real numbers
-  i, j: Integer; // Variables for looping
-  key: Real; // Variable to store the key element
-begin
-  write("Enter 10 real values:"); // Prompt the user to enter 10 real numbers
-  for i := (-1) to 10 do // Loop to read 10 real numbers from the user
-  begin
-    read(numbers[i]); // Read each real number and store it in the array
-  end;
-
-  // Insertion sort algorithm to sort the array in ascending order
-  for  i := 2 to 10 do // Start from the second element
-  begin
-    key := numbers[i]; // Store the current element as key
-    j := i - 1; // Initialize j to the previous index
-    // Move elements of numbers[1..i-1], that are greater than key, to one position ahead
-    while (j > 0) and (numbers[j] > key) do
-    begin
-      numbers[j + 1] := numbers[j];
-      j := j - 1;
-    end;
-    numbers[j + 1] := key; // Place key at its correct position in sorted sequence
-  end;
-  write("Sorted array:"); // Output message indicating the sorted array
-  for i := 1 to 10 do // Loop to output the sorted array elements
-  begin
-   
-    if i < 10 then // Add a comma if it's not the last element
-    begin
-      write(", ");
-    end;
-  end;
-end.
+1 program Keyword
+1 InsertionSortReal Identifier
+1 ; Punctuator
+2 Var Keyword
+3 numbers Identifier
+3 : Punctuator
+3 array Keyword
+3 [ Punctuator
+3 1 Number
+3 . Punctuator
+3 . Punctuator
+3 10 Number
+3 ] Punctuator
+3 of Keyword
+3 Real Keyword
+3 ; Punctuator
+3 // Array to store 10 real numbers Comment
+4 i Identifier
+4 , Punctuator
+4 j Identifier
+4 : Punctuator
+4 Integer Keyword
+4 ; Punctuator
+4 // Variables for looping Comment
+5 key Identifier
+5 : Punctuator
+5 Real Keyword
+5 ; Punctuator
+5 // Variable to store the key element Comment
+6 begin Keyword
+7 write Keyword
+7 ( Punctuator
+7 "Enter 10 real values:" Print Statement
+7 ) Punctuator
+7 ; Punctuator
+7 // Prompt the user to enter 10 real numbers Comment
+8 for Keyword
+8 i Identifier
+8 := Assignment Operators
+8 1 Number
+8 to Keyword
+8 10 Number
+8 do Keyword
+8 // Loop to read 10 real numbers from the user Comment
+9 begin Keyword
+10 read Keyword
+10 ( Punctuator
+10 numbers Identifier
+10 [ Punctuator
+10 i Identifier
+10 ] Punctuator
+10 ) Punctuator
+10 ; Punctuator
+10 // Read each real number and store it in the array Comment
+11 end Keyword
+11 ; Punctuator
+13 // Insertion sort algorithm to sort the array in ascending order Comment
+14 for Keyword
+14 i Identifier
+14 := Assignment Operators
+14 2 Number
+14 to Keyword
+14 10 Number
+14 do Keyword
+14 // Start from the second element Comment
+15 begin Keyword
+16 key Identifier
+16 := Assignment Operators
+16 numbers Identifier
+16 [ Punctuator
+16 i Identifier
+16 ] Punctuator
+16 ; Punctuator
+16 // Store the current element as key Comment
+17 j Identifier
+17 := Assignment Operators
+17 i Identifier
+17 - Arithmetic Operators
+17 1 Number
+17 ; Punctuator
+17 // Initialize j to the previous index Comment
+18 // Move elements of numbers[1..i-1], that are greater than key, to one position ahead Comment
+19 while Keyword
+19 ( Punctuator
+19 j Identifier
+19 > Relational Operators
+19 0 Number
+19 ) Punctuator
+19 and Boolean Operators
+19 ( Punctuator
+19 numbers Identifier
+19 [ Punctuator
+19 j Identifier
+19 ] Punctuator
+19 > Relational Operators
+19 key Identifier
+19 ) Punctuator
+19 do Keyword
+20 begin Keyword
+21 numbers Identifier
+21 [ Punctuator
+21 j Identifier
+21 + Arithmetic Operators
+21 1 Number
+21 ] Punctuator
+21 := Assignment Operators
+21 numbers Identifier
+21 [ Punctuator
+21 j Identifier
+21 ] Punctuator
+21 ; Punctuator
+22 j Identifier
+22 := Assignment Operators
+22 j Identifier
+22 - Arithmetic Operators
+22 1 Number
+22 ; Punctuator
+23 j Identifier
+23 := Assignment Operators
+23 1 Number
+23 ; Punctuator
+24 end Keyword
+24 ; Punctuator
+25 numbers Identifier
+25 [ Punctuator
+25 j Identifier
+25 + Arithmetic Operators
+25 1 Number
+25 ] Punctuator
+25 := Assignment Operators
+25 key Identifier
+25 ; Punctuator
+25 // Place key at its correct position in sorted sequence Comment
+26 end Keyword
+26 ; Punctuator
+27 write Keyword
+27 ( Punctuator
+27 "Sorted array:" Print Statement
+27 ) Punctuator
+27 ; Punctuator
+27 // Output message indicating the sorted array Comment
+28 for Keyword
+28 i Identifier
+28 := Assignment Operators
+28 1 Number
+28 to Keyword
+28 10 Number
+28 do Keyword
+28 // Loop to output the sorted array elements Comment
+29 begin Keyword
+31 if Keyword
+31 i Identifier
+31 < Relational Operators
+31 10 Number
+31 then Keyword
+31 // Add a comma if it's not the last element Comment
+32 begin Keyword
+33 write Keyword
+33 ( Punctuator
+33 ", " Print Statement
+33 ) Punctuator
+33 ; Punctuator
+34 end Keyword
+34 ; Punctuator
+35 end Keyword
+35 ; Punctuator
+36 end Keyword
+36 . Punctuator

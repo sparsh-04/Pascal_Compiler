@@ -46,7 +46,7 @@ Arithmetic_operators [+|\-|\*|/|\%]
 Relational_operators "="|"<>"|"<"|">"|"<="|">="
 Boolean_operators and|or|not
 identifier [a-zA-Z_][a-zA-Z0-9_]*
-Number "-"?[0-9]+
+Number [0-9]+
 printStatement \".*\"
 %%
 
@@ -138,7 +138,7 @@ printStatement \".*\"
 
 }
 {printStatement} {
-    
+    addToken(yytext, "Print Statement");
   ;
 }
 "//".*\n {
@@ -206,8 +206,8 @@ printStatement \".*\"
 }
 {Number} {
     addToken(yytext, "Number");
-    ;
-    ;
+    
+    
 }
 
 [\t \r] ;
