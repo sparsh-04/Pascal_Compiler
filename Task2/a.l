@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "y.tab.h"
+#include "a.tab.h"
 #include <ctype.h>
 
 #define YY_SKIP_YYWRAP
@@ -58,7 +58,6 @@ printStatement \".*\"
                     yytext[i] = tolower(yytext[i]);
                 }
     if(strcmp(yytext, "program") == 0){
-        // printf("Progrrwfwefewfam %d",strcmp(yytext, "program"));
         return PROGRAM;
     }
         
