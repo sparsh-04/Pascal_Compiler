@@ -1323,7 +1323,7 @@ yyreduce:
     {
   case 2: /* program: PROGRAM ID ';' declaration BEGINI statements END '.'  */
 #line 15 "a.y"
-                                                              {printf("Success");return 0;}
+                                                              {printf("valid input");return 0;}
 #line 1328 "a.tab.c"
     break;
 
@@ -1525,20 +1525,27 @@ yyreturnlab:
 
 
 void yyerror(char *s) {
-    fprintf(stderr, "Error: %s\n", s);
+    fprintf(stderr, "syntax error" );
 }
 
-int main(void) {
+int main(int argc, char *argv[]) {
+    if (argc != 2) {
+        printf("Usage: %s <input_file>\n", argv[0]);
+        return 1;
+    }
+
+    FILE *code = fopen(argv[1], "r");
+    if (code == NULL) {
+        perror("Error opening file");
+        return 1;
+    }
+
     extern FILE *yyin;
-    FILE *code = fopen("code.txt", "r");
-    yyin = fopen("code.txt", "r+");
-//     yylex();
+    yyin = code;
+
     yyparse();
+
     fclose(yyin);
-//     printf("Total Tokens: %d\n", maxTokens);
-//     for (int i = 0; i < maxTokens; i++) {
-//         printf("Line %d: Token '%s' - Type '%s'\n", tokenArray[i].lineNumber, tokenArray[i].token, tokenArray[i].tokenType);
-//     }
-//     free(tokenArray);
+
     return 0;
 }
