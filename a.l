@@ -1,3 +1,5 @@
+%option noyywrap
+%option yylineno
 %option caseless
 %{
 #include <stdio.h>
@@ -27,9 +29,9 @@ void addToken(const char *token, const char *tokenType) {
     tokenArray = (TokenInfo*)realloc(tokenArray, maxTokens * sizeof(TokenInfo));
     tokenArray[maxTokens - 1] = newToken;
 }
-int yywrap() {
-    return 1;
-}
+// int yywrap() {
+//     return 1;
+// }
 int yylex();
 // int yyerror(const char *s) {
 //     // fprintf(stderr, "%s\n", s);
@@ -138,7 +140,7 @@ printStatement \".*\"
 "." { //printf("DOT");
 
 return DOT;}
-"//".* {
+"//".*\n {
     // printf("Comment %s\n",yytext);
     }
 {punctuator} {
