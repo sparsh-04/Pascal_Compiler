@@ -43,10 +43,11 @@ int yylex();
 keywords program|integer|real|boolean|char|var|to|downto|if|then|else|while|for|do|array|begin|end|read|write|writeln|of
 punctuator "["|"]"|"("|")"|","|";"|":"|"."
 Arithmetic_operators [+|\-|\*|/|\%]
-Relational_operators "="|"<>"|"<"|">"|"<="|">="
+Relational_operators "="|"<>"|"<"|">"|"<="|">="|":="
 Boolean_operators and|or|not
 identifier [a-zA-Z_][a-zA-Z0-9_]*
 Number [0-9]+
+char ['].[']
 printStatement \".*\"
 %%
 
@@ -108,15 +109,6 @@ printStatement \".*\"
     if(strcmp(yytext, "array") == 0){
         
     }
-    // if(strcmp(yytext, "and") == 0){
-    //     ;
-    // }
-    // if(yytext == "or"){
-    //     ;
-    // }
-    // if(yytext == "not"){
-    //     ;
-    // }
     if(strcmp(yytext, "begin") == 0){
         
     }
@@ -138,7 +130,7 @@ printStatement \".*\"
 
 }
 {printStatement} {
-    addToken(yytext, "Print Statement");
+    // addToken(yytext, "Print Statement");
   ;
 }
 "//".*\n {
@@ -184,7 +176,10 @@ printStatement \".*\"
      if(strcmp(yytext,"=")==0){
     
     }
-    ;
+    if(strcmp(yytext,":=")==0){
+            addToken(yytext, "Assignment Operators");
+        }
+        else
     addToken(yytext, "Relational Operators");
    
 }
@@ -208,6 +203,9 @@ printStatement \".*\"
     addToken(yytext, "Number");
     
     
+}
+{char} {
+addToken(yytext, "Character");
 }
 
 [\t \r] ;

@@ -4,12 +4,12 @@
 
 void yyerror(char *s);
 int yylex(void);
+extern int lineNum;
 %}
 %left '+' '-'
 %left '*' '/' '%'
 %left BOOLEAN_OPERATOR
-
-%token PROGRAM INTEGER REAL BOOLEAN CHAR VAR TO DOWNTO IF THEN ELSE WHILE FOR DO ARRAY AND OR NOT BEGINI END READ WRITE WRITELN ID PUNCTUATOR ARITHMETIC_OPERATOR RELATIONAL_OPERATOR BOOLEAN_OPERATOR OF DOT NUMBER PrintStatement OpenB CloseB
+%token PROGRAM INTEGER REAL BOOLEAN CHAR VAR TO DOWNTO IF THEN ELSE WHILE FOR DO ARRAY AND OR NOT BEGINI END READ WRITE WRITELN ID PUNCTUATOR ARITHMETIC_OPERATOR RELATIONAL_OPERATOR BOOLEAN_OPERATOR OF DOT NUMBER PrintStatement OpenB CloseB AssignOp
 %%
 
 program: PROGRAM ID ';' declaration BEGINI statements END '.' {printf("valid input");return 0;};
@@ -35,7 +35,7 @@ statement: assignment_statement
         | write_statement
         ;
 
-assignment_statement: variable ':' '=' expression ';' ;
+assignment_statement: variable AssignOp expression ';' ;
 
 if_statement: IF condition THEN BEGINI statements END ELSE BEGINI statements END ';' 
             | IF condition THEN BEGINI statements END ';'
@@ -43,8 +43,8 @@ if_statement: IF condition THEN BEGINI statements END ELSE BEGINI statements END
 
 while_statement: WHILE condition DO BEGINI statements END ';' ;
 
-for_statement: FOR variable ':' '=' expression TO expression DO BEGINI statements END ';' 
-            | FOR variable ':' '=' expression DOWNTO expression DO BEGINI statements END ';' ;
+for_statement: FOR variable AssignOp expression TO expression DO BEGINI statements END ';' 
+            | FOR variable AssignOp expression DOWNTO expression DO BEGINI statements END ';' ;
 
 read_statement: READ '(' variable ')' ';' ;
 
@@ -73,13 +73,12 @@ expression: expression '+' expression
           | variable
           | NUMBER
           |'-' NUMBER
+          | '+' NUMBER
         ;
 
 variable: ID '[' expression']'
         | ID 
-        |'('ID')'
-        |'['ID']'
-        |'{'ID'}';
+        ;
 
 type:
     INTEGER
