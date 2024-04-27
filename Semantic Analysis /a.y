@@ -62,13 +62,13 @@ int same_type(char *name1, char *name2) {
 }
 struct ast_node {
     char *node_type;
-    char *value;
+    // char *value;
     struct ast_node *left;
     struct ast_node *right;
 };
 struct ast_node *head;
 // Function to create a new AST node
-struct ast_node *new_ast_node(char *node_type, char *value, struct ast_node *left, struct ast_node *right) {
+struct ast_node *new_ast_node(char *node_type, struct ast_node *left, struct ast_node *right) {
     struct ast_node *new_node = malloc(sizeof(struct ast_node));
     new_node->node_type = strdup(node_type);
     new_node->value = strdup(value);
@@ -99,46 +99,49 @@ void print_ast(struct ast_node *node) {
 	} node_obj; 
 } 
 
-%token <node_obj> PROGRAM INTEGER REAL BOOLEAN CHAR VAR TO DOWNTO IF THEN ELSE WHILE FOR DO ARRAY AND OR NOT BEGINI END READ WRITE WRITELN ID PUNCTUATOR ARITHMETIC_OPERATOR RELATIONAL_OPERATOR BOOLEAN_OPERATOR OF DOT NUMBER PrintStatement OpenB CloseB AssignOp STRING FLOAT_NUM
+%token <node_obj> PROGRAM INTEGER REAL BOOLEAN CHAR VAR TO DOWNTO IF THEN ELSE WHILE FOR DO ARRAY AND OR NOT BEGINI END READ WRITE WRITELN ID PUNCTUATOR ARITHMETIC_OPERATOR RELATIONAL_OPERATOR BOOLEAN_OPERATOR OF DOT NUMBER PrintStatement OpenB CloseB AssignOp STRING FLOAT_NUM 
 %%
 
 program: PROGRAM ID ';' declaration BEGINI statements END '.' {
-    $$.nd = new_ast_node("program", "p", $2, $4);
-    $4 = new_ast_node("begin", "b", $6, $7);
+    $$.nd = new_ast_node("program", $2, $4);
+    $4 = new_ast_node("declaration", $5, $6);
+    $6 = new_ast_node("statements", $7, NULL);
     head = $$.nd;
     printf("valid input");return 0;};
 
 
 declaration: VAR var_lists {
-    $$.nd = new_ast_node("declaration", "d", $1, $2);
+    $$.nd = new_ast_node("declaration",$1, $2);
 };
 
 var_lists :var_list ':' type ';' var_lists {
-    $$.nd = new_ast_node("var_lists", "vl", $1, $3);
-    $3 = new_ast_node("type", "t", $5,NULL);
-}
-                |  {
-                    $$.nd = new_ast_node("var_lists", "vl", NULL,NULL);;
-                }
+    $$.nd = new_ast_node("var_lists",  $1, $3);
+    $3 = new_ast_node("type", $5,NULL); }
+                |  {$$.nd = new_ast_node("var_lists", NULL,NULL);;}
                 ;
 
-var_list: var_list ',' variable 
-        | variable
-        ;
-statements: statements statement
-        |
-        ;
-statement: assignment_statement
-        | if_statement
-        | while_statement
-        | for_statement
-        | read_statement
-        | write_statement
+var_list: var_list ',' variable { $$.nd = new_ast_node("var_list", $1, $3);}
+        | variable { $$.nd = new_ast_node("var_list", $1, NULL); }
         ;
 
-assignment_statement: variable AssignOp expression ';' ;
+   
+statements: statements statement { $$.nd = new_ast_node("statements", $1, $2); }
+        | { $$.nd =  new_ast_node("statements", NULL, NULL); }
+        ;
+statement: assignment_statement { $$.nd = new_ast_node("statement", $1, NULL); }
+        | if_statement { $$.nd = new_ast_node("statement", $1, NULL); }
+        | while_statement  { $$.nd = new_ast_node("statement", $1, NULL); }
+        | for_statement { $$.nd = new_ast_node("statement", $1, NULL); }
+        | read_statement { $$.nd = new_ast_node("statement", $1, NULL); }
+        | write_statement { $$.nd = new_ast_node("statement", $1, NULL); }
+        ;
 
-if_statement: IF condition THEN BEGINI statements END ELSE BEGINI statements END ';' 
+assignment_statement: variable AssignOp expression ';' {  $$.nd = new_ast_node("assignment_statement", $1, $2);
+    $2 = new_ast_node(":=", $3, NULL);};
+
+if_statement: IF condition THEN BEGINI statements END ELSE BEGINI statements END ';'  { $$.nd = new_ast_node("if_statement", $2, $4);
+    $4 = new_ast_node("statements", $5, $6);
+    $6 = new_ast_node("else", $9, $10);}
             | IF condition THEN BEGINI statements END ';'
             ;
 
