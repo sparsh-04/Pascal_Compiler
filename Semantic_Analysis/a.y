@@ -67,7 +67,7 @@ struct ast_node {
     struct ast_node *right;
 };
 struct ast_node *head;
-// Function to create a new AST node
+
 struct ast_node *new_ast_node(char *node_type, struct ast_node *left, struct ast_node *right) {
     struct ast_node *new_node = malloc(sizeof(struct ast_node));
     new_node->node_type = strdup(node_type);
@@ -104,45 +104,45 @@ void print_ast(struct ast_node *node) {
 %%
 
 program: PROGRAM ID ';' declaration BEGINI statements END '.' {
-    $$.nd = new_ast_node("program", $2, $4);
-    $4 = new_ast_node("declaration", $5, $6);
-    $6 = new_ast_node("statements", $7, NULL);
+    $$.nd = new_ast_node("program", $2.nd, $4.nd);
+    $4.nd = new_ast_node("declaration", $5.nd, $6.nd);
+    $6.nd = new_ast_node("statements", $7.nd, NULL);
     head = $$.nd;
     printf("valid input");return 0;};
 
 
 declaration: VAR var_lists {
-    $$.nd = new_ast_node("declaration",$1, $2);
+    $$.nd = new_ast_node("declaration",$1.nd, $2.nd);
 };
 
 var_lists :var_list ':' type ';' var_lists {
-    $$.nd = new_ast_node("var_lists",  $1, $3);
-    $3 = new_ast_node("type", $5,NULL); }
+    $$.nd = new_ast_node("var_lists",  $1.nd, $3.nd);
+    $3.nd = new_ast_node("type", $5.nd,NULL); }
                 |  {$$.nd = new_ast_node("var_lists", NULL,NULL);;}
                 ;
 
-var_list: var_list ',' variable { $$.nd = new_ast_node("var_list", $1, $3);}
-        | variable { $$.nd = new_ast_node("var_list", $1, NULL); }
+var_list: var_list ',' variable { $$.nd = new_ast_node("var_list", $1.nd, $3.nd);}
+        | variable { $$.nd = new_ast_node("var_list", $1.nd, NULL); }
         ;
 
    
-statements: statements statement { $$.nd = new_ast_node("statements", $1, $2); }
+statements: statements statement { $$.nd = new_ast_node("statements", $1.nd, $2.nd); }
         | { $$.nd =  new_ast_node("statements", NULL, NULL); }
         ;
-statement: assignment_statement { $$.nd = new_ast_node("statement", $1, NULL); }
-        | if_statement { $$.nd = new_ast_node("statement", $1, NULL); }
-        | while_statement  { $$.nd = new_ast_node("statement", $1, NULL); }
-        | for_statement { $$.nd = new_ast_node("statement", $1, NULL); }
-        | read_statement { $$.nd = new_ast_node("statement", $1, NULL); }
-        | write_statement { $$.nd = new_ast_node("statement", $1, NULL); }
+statement: assignment_statement { $$.nd = new_ast_node("statement", $1.nd, NULL); }
+        | if_statement { $$.nd = new_ast_node("statement", $1.nd, NULL); }
+        | while_statement  { $$.nd = new_ast_node("statement", $1.nd, NULL); }
+        | for_statement { $$.nd = new_ast_node("statement", $1.nd, NULL); }
+        | read_statement { $$.nd = new_ast_node("statement", $1.nd, NULL); }
+        | write_statement { $$.nd = new_ast_node("statement", $1.nd, NULL); }
         ;
 
-assignment_statement: variable AssignOp expression ';' {  $$.nd = new_ast_node("assignment_statement", $1, $2);
-    $2 = new_ast_node(":=", $3, NULL);};
+assignment_statement: variable AssignOp expression ';' {  $$.nd = new_ast_node("assignment_statement", $1.nd, $2.nd);
+    $2.nd = new_ast_node(":=", $3.nd, NULL);};
 
-if_statement: IF condition THEN BEGINI statements END ELSE BEGINI statements END ';'  { $$.nd = new_ast_node("if_statement", $2, $3);
-    $3 = new_ast_node("statements", $4, $6);
-    $4 = new_ast_node("else", $5, $10);}
+if_statement: IF condition THEN BEGINI statements END ELSE BEGINI statements END ';'  { $$.nd = new_ast_node("if_statement", $2.nd, $3.nd);
+    $3.nd = new_ast_node("statements", $4.nd, $6.nd);
+    $4.nd = new_ast_node("else", $5.nd, $10.nd);}
             | IF condition THEN BEGINI statements END ';'
             ;
 
@@ -205,11 +205,12 @@ int main(int argc, char *argv[]){
     filename=argv[1];
 
     printf("\n");
-
+    FILE *yyin;
+printf("1\n");
     yyin=fopen(filename, "r");
-
+printf("2\n");
     yyparse();
-
+printf("3\n");
     return 0;
 
 }
