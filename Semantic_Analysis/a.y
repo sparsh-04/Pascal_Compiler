@@ -71,7 +71,7 @@ struct ast_node *head;
 struct ast_node *new_ast_node(char *node_type, struct ast_node *left, struct ast_node *right) {
     struct ast_node *new_node = malloc(sizeof(struct ast_node));
     new_node->node_type = strdup(node_type);
-    new_node->value = strdup(value);
+
     new_node->left = left;
     new_node->right = right;
     return new_node;
@@ -81,7 +81,7 @@ void print_ast(struct ast_node *node) {
     if (node == NULL) {
         return;
     }
-    printf("Node type: %s, value: %s\n", node->node_type, node->value);
+    printf("Node type: %s\n", node->node_type);
     print_ast(node->left);
     print_ast(node->right);
 }
@@ -93,13 +93,14 @@ void print_ast(struct ast_node *node) {
 // %left NOT 
 
 %union { 
-	struct ast_node { 
+	struct node { 
 		char name[100]; 
 		struct ast_node* nd;
 	} node_obj; 
 } 
 
 %token <node_obj> PROGRAM INTEGER REAL BOOLEAN CHAR VAR TO DOWNTO IF THEN ELSE WHILE FOR DO ARRAY AND OR NOT BEGINI END READ WRITE WRITELN ID PUNCTUATOR ARITHMETIC_OPERATOR RELATIONAL_OPERATOR BOOLEAN_OPERATOR OF DOT NUMBER PrintStatement OpenB CloseB AssignOp STRING FLOAT_NUM 
+%type <node_obj> program declaration statements statement assignment_statement if_statement while_statement for_statement read_statement write_statement condition expression variable type var_lists var_list
 %%
 
 program: PROGRAM ID ';' declaration BEGINI statements END '.' {
@@ -139,9 +140,9 @@ statement: assignment_statement { $$.nd = new_ast_node("statement", $1, NULL); }
 assignment_statement: variable AssignOp expression ';' {  $$.nd = new_ast_node("assignment_statement", $1, $2);
     $2 = new_ast_node(":=", $3, NULL);};
 
-if_statement: IF condition THEN BEGINI statements END ELSE BEGINI statements END ';'  { $$.nd = new_ast_node("if_statement", $2, $4);
-    $4 = new_ast_node("statements", $5, $6);
-    $6 = new_ast_node("else", $9, $10);}
+if_statement: IF condition THEN BEGINI statements END ELSE BEGINI statements END ';'  { $$.nd = new_ast_node("if_statement", $2, $3);
+    $3 = new_ast_node("statements", $4, $6);
+    $4 = new_ast_node("else", $5, $10);}
             | IF condition THEN BEGINI statements END ';'
             ;
 
@@ -152,7 +153,7 @@ for_statement: FOR variable AssignOp expression TO expression DO BEGINI statemen
 
 read_statement: READ '(' variable ')' ';' ;
 
-write_statement: WRITE '(' PrintStatement ')' ';' 
+write_statement: WRITE '(' PrintStatement ')' ';'  
                 | WRITELN '(' PrintStatement ')' ';'
                 | WRITE '(' var_list ')' ';'
                 | WRITELN '(' variable ')' ';' ;
