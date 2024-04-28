@@ -54,72 +54,93 @@ digit [0-9]
                     yytext[i] = tolower(yytext[i]);
                 }
     if(strcmp(yytext, "program") == 0){
+        strcpy(yylval.nd_obj.name,(yytext));
         return PROGRAM;
     }
         
     if(strcmp(yytext, "integer") == 0){
-        
+        strcpy(yylval.nd_obj.name,(yytext));
         return INTEGER;
     }
     if(strcmp(yytext, "Integer") == 0){
+        strcpy(yylval.nd_obj.name,(yytext));
         return INTEGER;
     }
     if(strcmp(yytext, "real") == 0){
+        strcpy(yylval.nd_obj.name,(yytext));
         return REAL;
     }
     if(strcmp(yytext, "boolean") == 0){
+        strcpy(yylval.nd_obj.name,(yytext));
         return BOOLEAN;
     }
     if(strcmp(yytext, "char") == 0){
+        strcpy(yylval.nd_obj.name,(yytext));
         return CHAR;
     }
     if( strcmp(yytext, "var") == 0){
+        strcpy(yylval.nd_obj.name,(yytext));
         
         return VAR;
     }
     if(strcmp(yytext, "to") == 0){
+        strcpy(yylval.nd_obj.name,(yytext));
         return TO;
     }
     if(strcmp(yytext, "downto") == 0){
+        strcpy(yylval.nd_obj.name,(yytext));
         return DOWNTO;
     }
     if( strcmp(yytext, "if") == 0){
+        strcpy(yylval.nd_obj.name,(yytext));
         return IF;
     }
     if(strcmp(yytext, "then") == 0){
+        strcpy(yylval.nd_obj.name,(yytext));
         return THEN;
     }
     if(strcmp(yytext, "else") == 0){
+        strcpy(yylval.nd_obj.name,(yytext));
         return ELSE;
     }
     if(strcmp(yytext, "while") == 0){
+        strcpy(yylval.nd_obj.name,(yytext));
         return WHILE;
     }
     if(strcmp(yytext, "for") == 0){
+        strcpy(yylval.nd_obj.name,(yytext));
         return FOR;
     }
     if(strcmp(yytext, "do") == 0){
+        strcpy(yylval.nd_obj.name,(yytext));
         return DO;
     }
     if(strcmp(yytext, "array") == 0){
+        strcpy(yylval.nd_obj.name,(yytext));
         return ARRAY;
     }
     if(strcmp(yytext, "begin") == 0){
+        strcpy(yylval.nd_obj.name,(yytext));
         return BEGINI;
     }
     if(strcmp(yytext, "end") == 0){
+        strcpy(yylval.nd_obj.name,(yytext));
         return END;
     }
     if(strcmp(yytext, "read") == 0){
+        strcpy(yylval.nd_obj.name,(yytext));
         return READ;
     }
     if(strcmp(yytext, "write") == 0 ){
+        strcpy(yylval.nd_obj.name,(yytext));
         return WRITE;
     }
     if(strcmp(yytext, "writeln") == 0 ){
+        strcpy(yylval.nd_obj.name,(yytext));
         return WRITELN;
     }
     if(strcmp(yytext, "of") == 0){
+        strcpy(yylval.nd_obj.name,(yytext));
         return OF;
     }
 
@@ -135,28 +156,35 @@ digit [0-9]
 {punctuator} {
     addToken(yytext, "Punctuator");
     if(strcmp(yytext,"[")==0){
+    strcpy(yylval.nd_obj.name,(yytext));
     return '[';
     }
     if(strcmp(yytext,"]")==0){
+    strcpy(yylval.nd_obj.name,(yytext));
     return ']';
     }
     if(strcmp(yytext,"(")==0){
+    strcpy(yylval.nd_obj.name,(yytext));
     return '(';
     }
     if(strcmp(yytext,")")==0){
+    strcpy(yylval.nd_obj.name,(yytext));
     return ')';
     }
     if(strcmp(yytext,";")==0){
+    strcpy(yylval.nd_obj.name,(yytext));
     return ';';
     }
     if(strcmp(yytext,":")==0){
+    strcpy(yylval.nd_obj.name,(yytext));
     return ':';
     }
     if(strcmp(yytext,",")==0){
+    strcpy(yylval.nd_obj.name,(yytext));
     return ',';
     }
     if(strcmp(yytext,".")==0){
-       
+    strcpy(yylval.nd_obj.name,(yytext));
     return '.';
     }
 
@@ -166,18 +194,23 @@ digit [0-9]
 {Arithmetic_operators} {
     addToken(yytext, "Arithmetic Operators");
         if(strcmp(yytext,"+")==0){
+            strcpy(yylval.nd_obj.name,(yytext));
             return '+';
         }
         if(strcmp(yytext,"-")==0){
+            strcpy(yylval.nd_obj.name,(yytext));
             return '-';
         }
         if(strcmp(yytext,"*")==0){
+            strcpy(yylval.nd_obj.name,(yytext));
             return '*';
         }
         if(strcmp(yytext,"%")==0){
+            strcpy(yylval.nd_obj.name,(yytext));
             return '%';
         }
         if(strcmp(yytext,"/")==0){
+            strcpy(yylval.nd_obj.name,(yytext));
             return '/';
         }
         return ARITHMETIC_OPERATOR;
@@ -185,10 +218,12 @@ digit [0-9]
 }
 {Relational_operators} {
         if(strcmp(yytext,":=")==0){
+            strcpy(yylval.nd_obj.name,(yytext));
             return AssignOp;
         }
      if(strcmp(yytext,"=")==0){
-    return '=';
+            strcpy(yylval.nd_obj.name,(yytext));
+            return '=';
     }
     
     addToken(yytext, "Relational Operators");
