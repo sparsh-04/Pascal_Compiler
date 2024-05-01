@@ -10,7 +10,7 @@
 
 #define YY_SKIP_YYWRAP
 
-int lineNum = 1;
+int lineNum = 0;
 int maxTokens = 0;
 
 typedef struct {
@@ -43,7 +43,7 @@ Boolean_operators and|or|not
 identifier [a-zA-Z_][a-zA-Z0-9_]*
 Number [0-9]+
 printStatement \".*\"
-char ['].[']
+chara ['].[']
 digit [0-9]
 float {digit}+\.{digit}*
 %%
@@ -60,15 +60,15 @@ float {digit}+\.{digit}*
     }
         
     if(strcmp(yytext, "integer") == 0){
-        strcpy(yylval.node_obj.name,(yytext));
+        strcpy(yylval.node_obj.name,"int");
         return INTEGER;
     }
     if(strcmp(yytext, "Integer") == 0){
-        strcpy(yylval.node_obj.name,(yytext));
+        strcpy(yylval.node_obj.name,"int");
         return INTEGER;
     }
     if(strcmp(yytext, "real") == 0){
-        strcpy(yylval.node_obj.name,(yytext));
+        strcpy(yylval.node_obj.name,"real");
         return REAL;
     }
     if(strcmp(yytext, "boolean") == 0){
@@ -220,7 +220,6 @@ float {
             strcpy(yylval.node_obj.name,(yytext));
             return DIV;
         }
-        return ARITHMETIC_OPERATOR;
 
 }
 {Relational_operators} {
@@ -293,9 +292,12 @@ float {
     strcpy(yylval.node_obj.name,(yytext));
     return FLOAT_NUM; }
 
-{char} {
-return CHARACTER;
+{chara} {
+    addToken(yytext, "Character");
+    strcpy(yylval.node_obj.name,(yytext));
+    return CHARACTER;
 }
+
 
 [\t \r] ;
 \n {
