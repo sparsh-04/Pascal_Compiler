@@ -162,8 +162,8 @@ void print_ast_InOrder(struct ast_node *node) {
 		} nd_obj2; 
 } 
 
-%token <node_obj> PROGRAM INTEGER REAL BOOLEAN CHAR VAR TO DOWNTO IF THEN ELSE WHILE FOR DO ARRAY AND OR NOT BEGINI END READ WRITE WRITELN ID PUNCTUATOR ARITHMETIC_OPERATOR BOOLEAN_OPERATOR OF DOT NUMBER CHARACTER REAL_NUM PrintStatement OpenB CloseB AssignOp STRING FLOAT_NUM  LE GE LESS GR NE EQ PLUS MINUS MUL DIV MOD
-%type <node_obj> program declaration statements statement assignment_statement if_statement while_statement for_statement read_statement write_statement condition Type var_lists var_list RELATIONAL_OPERATOR else_statement inc_or_dec assignment_statement_loop
+%token <node_obj> PROGRAM INTEGER REAL BOOLEAN CHAR VAR TO DOWNTO IF THEN ELSE WHILE FOR DO ARRAY AND OR NOT BEGINI END READ WRITE ID PUNCTUATOR ARITHMETIC_OPERATOR BOOLEAN_OPERATOR OF DOT NUMBER CHARACTER REAL_NUM PrintStatement OpenB CloseB AssignOp STRING FLOAT_NUM  LE GE LESS GR NE EQ PLUS MINUS MUL DIV MOD
+%type <node_obj> program declaration statements statement assignment_statement if_statement while_statement for_statement read_statement write_statement condition Type var_lists var_list RELATIONAL_OPERATOR else_statement inc_or_dec assignment_statement_loop print_or_var
 %type <nd_obj2> value expression variable
 
 %%
@@ -198,16 +198,22 @@ var_list: variable {add('V',$1.name); } ',' var_list  { $$.nd = new_ast_node($1.
         ;
 
    
-statements: statements statement { $$.nd = new_ast_node("statements", $1.nd, $2.nd); }
-        | { $$.nd = NULL; }
+statements: statements statement { 
+    if($1.nd == NULL){
+        $$.nd = $2.nd;
+    }else{
+        $$.nd = new_ast_node("statements", $1.nd, $2.nd); 
+    }
+    }
+        |  {$$.nd = NULL;}
         ;
 
 statement: assignment_statement { $$.nd = new_ast_node("assignment_statement", $1.nd, NULL);}
-        | if_statement { $$.nd = new_ast_node("\0", $1.nd, NULL);}
-        | while_statement  { $$.nd = new_ast_node("\0", $1.nd, NULL); }
-        | for_statement { $$.nd = new_ast_node("\0", $1.nd, NULL); }
-        | read_statement { $$.nd = new_ast_node("\0", $1.nd, NULL); }
-        | write_statement { $$.nd = new_ast_node("\0", $1.nd, NULL); }
+        | if_statement { $$.nd = $1.nd;}
+        | while_statement  { $$.nd = $1.nd;}
+        | for_statement { $$.nd = $1.nd; }
+        | read_statement { $$.nd = $1.nd; }
+        | write_statement { $$.nd = $1.nd; }
         ;
 
 assignment_statement: variable AssignOp expression ';' {  $$.nd = new_ast_node($2.name, $1.nd, $3.nd);
@@ -248,10 +254,10 @@ else_statement: ELSE {add('K',$1.name);} BEGINI statements END {
 |
 ;
 
-while_statement: WHILE {add('K',$1.name);} condition DO BEGINI statements END ';' {
-    $7.nd = new_ast_node("end", NULL, NULL);
-    $5.nd = new_ast_node("begin", $6.nd, NULL);
-   $4.nd = new_ast_node("do", $5.nd, $7.nd);
+while_statement: WHILE {add('K',$1.name);} condition DO BEGINI {printf("heyy");} statements END ';' {
+    $8.nd = new_ast_node("end", NULL, NULL);
+    $5.nd = new_ast_node("begin", $7.nd, NULL);
+   $4.nd = new_ast_node("do", $5.nd, $8.nd);
    $$.nd = new_ast_node("while", $3.nd, $4.nd);
 
 };
@@ -267,24 +273,31 @@ inc_or_dec: TO expression DO BEGINI statements END {
     $1.nd = new_ast_node("to", $2.nd, $3.nd);
     $$.nd = new_ast_node("increment", $1.nd, $3.nd);
 };
-
-// | DOWNTO expression DO BEGINI statements END {
-//     $6.nd = new_ast_node("end", NULL, NULL);
-//     $3.nd = new_ast_node("begin", $4.nd, NULL);
-//     $3.nd = new_ast_node("do", $4.nd, $6.nd);
-//     $1.nd = new_ast_node("downto", $2.nd, $3.nd);
-//     $$.nd = new_ast_node("decrement", $1.nd, $3.nd);
-// };
+| DOWNTO expression DO BEGINI statements END {
+    $6.nd = new_ast_node("end", NULL, NULL);
+    $3.nd = new_ast_node("begin", $4.nd, NULL);
+    $3.nd = new_ast_node("do", $4.nd, $6.nd);
+    $1.nd = new_ast_node("downto", $2.nd, $3.nd);
+    $$.nd = new_ast_node("decrement", $1.nd, $3.nd);
+};
 
 read_statement: READ {add('K',$1.name);} '(' variable ')' ';' {
     $$.nd = new_ast_node("read", $4.nd, NULL);
 };
 
-write_statement: WRITE {add('K',$1.name);} '(' PrintStatement ')' ';'  { $$.nd = new_ast_node("write", $4.nd, NULL); $4.nd = new_ast_node($4.name, NULL, NULL); }
-                | WRITE {add('K',$1.name);} '(' var_list ')' ';' { $$.nd = new_ast_node("write", $4.nd, NULL); }
-                | WRITELN {add('K',$1.name);} '(' PrintStatement ')' ';' { $$.nd = new_ast_node("writeln", $4.nd, NULL); $4.nd = new_ast_node($4.name, NULL, NULL);}
-                | WRITELN {add('K',$1.name);} '(' var_list ')' ';' { $$.nd = new_ast_node("writeln", $4.nd, NULL); }
-                ;
+write_statement: WRITE {add('K',$1.name);} print_or_var ';'  { 
+    $$.nd = new_ast_node("write", $3.nd, NULL);  
+};
+
+print_or_var: '(' PrintStatement ')' {
+    $$.nd = new_ast_node($2.name, NULL, NULL); 
+    // $$.nd = new_ast_node("PrintStatement", NULL, NULL)
+};
+
+| '(' var_list ')'  {
+    $$.nd = new_ast_node($2.name, NULL, NULL); 
+    // $$.nd = new_ast_node("write", NULL, NULL)
+};
 
 condition: expression RELATIONAL_OPERATOR expression { $$.nd = new_ast_node($2.name, $1.nd, $3.nd); 
 }
