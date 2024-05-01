@@ -1,0 +1,1 @@
+[program[numberofdigits[declaration[var][var_lists[variable[Type]][var_lists]]]][begin[statements[statements[statements[statements[[write]]][[read[number]]]][assignment statement[:=[count][0]]]][[write]]]]]

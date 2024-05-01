@@ -109,7 +109,7 @@ void print_ast_PreOrder(struct ast_node *node) {
     if (node == NULL) {
         return;
     }
-    if(node->node_type[0]!='\0')
+    // if(node->node_type[0]!='\0')
     printf("[");
     printf("%s", node->node_type);
     print_ast_PreOrder(node->left);
@@ -169,7 +169,7 @@ var_lists :var_list ':' Type ';' var_lists {
     $1.nd = new_ast_node("variable", $3.nd,NULL); 
     $$.nd = new_ast_node("var_lists",  $1.nd, $5.nd);
     }
-                |  {$$.nd = new_ast_node("var_lists", NULL,NULL);;}
+                |  {$$.nd = new_ast_node("var_lists", NULL,NULL);}
                 ;
 
 var_list: variable {add('V',$1.name); } ',' var_list  { $$.nd = new_ast_node($1.name, $4.nd,NULL);}
@@ -321,7 +321,7 @@ printf("2\n");
 	}
 	printf("\n\n");
 printf("3\n");
-print_ast_InOrder(head);
+print_ast_PreOrder(head);
     return 0;
 
 }
