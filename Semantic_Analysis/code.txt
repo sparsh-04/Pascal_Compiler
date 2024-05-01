@@ -1,22 +1,12 @@
 program NumberOfDigits;
 var
-  number, count: Integer;
+  number, count, a , b: Integer;
 begin
   write("Enter a number:");
   read(number);
-  count := 0;
-  while number <> 0 do
+  b := 20;
+  for a := 10; to 20 do
   begin
-    if number <> 0 then
-    begin
-      count:=count+1;
-    end
-    else 
-    begin
-     count :=count;
-    end; 
-    number := number / 10;
+    count := 1;
   end;
-  write("The number of digits is: ");
-  write(count);
 end.
