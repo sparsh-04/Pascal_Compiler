@@ -136,10 +136,6 @@ float {digit}+\.{digit}*
         strcpy(yylval.node_obj.name,(yytext));
         return WRITE;
     }
-    if(strcmp(yytext, "writeln") == 0 ){
-        strcpy(yylval.node_obj.name,(yytext));
-        return WRITELN;
-    }
     if(strcmp(yytext, "of") == 0){
         strcpy(yylval.node_obj.name,(yytext));
         return OF;
