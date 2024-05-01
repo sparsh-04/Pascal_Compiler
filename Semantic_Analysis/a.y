@@ -12,7 +12,7 @@ int search(char *);
 extern int lineNum;
 extern char* yytext;
 int count  = 0,q,sem_errors=0;
-char errors[10][100];
+char errors[100][100];
 
 struct symbol_table {
     char * name;
@@ -51,6 +51,9 @@ int symbol_exists(char *name) {
             return 1;
         }
     }
+    sprintf(errors[sem_errors], "Line %d: Variable \"%s\" not declared before usage!\n", lineNum+1, name);  
+        sem_errors++;    
+
     return 0;
 }
 int symbol_initialized(char *name) {
@@ -60,6 +63,13 @@ int symbol_initialized(char *name) {
         sem_errors++;
     }
     return 0;
+}
+char *get_type(char *var) { 
+    for(int i=0; i<count; i++) {  
+        if(!strcmp(symbol_table[i].name, var)) {   
+            return symbol_table[i].data_type;  
+        }
+    }
 }
 // Function to set a symbol as initialized
 void initialize_symbol(char *name) {
@@ -73,18 +83,20 @@ void initialize_symbol(char *name) {
 int same_type(char *name1, char *name2) {
 
 
-    if(!strcmp(name2, "null")) return -1; 
-    // both datatypes are same 
-    if(!strcmp(name1, name2)) return 0; 
-    // both datatypes are different 
-    if(!strcmp(name1, "int") && !strcmp(name2, "real")) return 1;
-    if(!strcmp(name1, "real") && !strcmp(name2, "int")) return 2;
-    if(!strcmp(name1, "int") && !strcmp(name2, "char")) return 3;
-    if(!strcmp(name1, "char") && !strcmp(name2, "int")) return 4;
-    if(!strcmp(name1, "real") && !strcmp(name2, "char")) return 5;
-    if(!strcmp(name1, "char") && !strcmp(name2, "real")) return 6;
-    
-    return strcmp(name1, name2) == 0;
+    if(!strcmp(name2, "null")) {
+sprintf(errors[sem_errors], "Line %d: Variable name \"%s\" has not the same type!\n", lineNum+1, name2);
+        return -1; 
+    }
+   
+    if(strcmp(name1, name2)==0) 
+    return 1;
+    else{
+        sprintf(errors[sem_errors], "Line %d: Variable name \"%s\" and \"%s\" has not the same type!\n", lineNum+1, name1,name1);
+return 0;
+    } 
+    // return strcmp(name1, name2);
+
+
 }
 struct ast_node {
     char *node_type;
@@ -103,7 +115,7 @@ struct ast_node *new_ast_node(char *node_type, struct ast_node *left, struct ast
     return new_node;
 }
 
-char reserved[22][15] = {"program","integer","real","char","var","to","downto","if","then","else","while","for","do","array","and","or","not","begin","end","read","write","writeln"};
+char reserved[24][20] = {"program","integer","real","char","var","to","downto","if","then","else","while","for","do","array","and","or","not","begin","end","read","write","writeln"};
 
 void print_ast_PreOrder(struct ast_node *node) {
     if (node == NULL) {
@@ -181,7 +193,9 @@ var_list: variable {add('V',$1.name); } ',' var_list  { $$.nd = new_ast_node($1.
 statements: statements statement { $$.nd = new_ast_node("statements", $1.nd, $2.nd); }
         | { $$.nd = NULL; }
         ;
-statement: assignment_statement { $$.nd = new_ast_node("assignment statement", $1.nd, NULL); }
+statement: assignment_statement { $$.nd = new_ast_node("assignment statement", $1.nd, NULL);
+
+ }
         | if_statement { $$.nd = new_ast_node("\0", $1.nd, NULL); }
         | while_statement  { $$.nd = new_ast_node("\0", $1.nd, NULL); }
         | for_statement { $$.nd = new_ast_node("\0", $1.nd, NULL); }
@@ -191,8 +205,9 @@ statement: assignment_statement { $$.nd = new_ast_node("assignment statement", $
 
 assignment_statement: variable AssignOp expression ';' {  $$.nd = new_ast_node($2.name, $1.nd, $3.nd);
   //  $2.nd = new_ast_node(":=", $3.nd, NULL);
-  };
-
+  int t = same_type($1.name, $3.nd->node_type);
+ 
+};
 if_statement: IF {add('K',$1.name);} condition THEN BEGINI statements END ELSE {add('K',$8.name);} BEGINI statements END ';'  {
 
     $12.nd = new_ast_node("end", NULL, NULL);
