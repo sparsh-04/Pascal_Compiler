@@ -180,16 +180,16 @@ program: PROGRAM ID ';' declaration BEGINI {add('K',$5.name);} statements END {a
 declaration: VAR { add('K',$1.name); } var_lists {
 
     $1.nd = new_ast_node($1.name, NULL, NULL);
-   $$.nd = new_ast_node("declaration",$1.nd, $3.nd);
+    $$.nd = new_ast_node("declaration",$1.nd, $3.nd);
     // $2.nd = new_ast_node("var_lists", $2.nd, NULL);
 };
 
 var_lists :var_list ':' Type ';' var_lists {
-    $3.nd = new_ast_node("Type", NULL, NULL); //have to update type
-    $1.nd = new_ast_node("variable", $3.nd,NULL); 
-    $$.nd = new_ast_node("var_lists",  $1.nd, $5.nd);
+    // $3.nd = new_ast_node($3.name, NULL, NULL); //have to update type
+    struct ast_node *a = new_ast_node("variable", $1.nd,$3.nd);
+    $$.nd = new_ast_node("var_lists", a , $5.nd);
     }
-                |  {$$.nd = new_ast_node("var_lists", NULL,NULL);}
+                |  {$$.nd = NULL;}
                 ;
 
 var_list: variable {add('V',$1.name); } ',' var_list  { $$.nd = new_ast_node($1.name, $4.nd,NULL);}
@@ -356,15 +356,15 @@ value:  NUMBER { strcpy($$.name, $1.name); sprintf($$.type, "int"); add('C',$1.n
         | variable{ strcpy($$.name, $1.name); char *id_type = get_type($1.name); sprintf($$.type, id_type); symbol_initialized($1.name); $$.nd = new_ast_node( $1.name,NULL, NULL);}
 
 variable: ID '[' expression']' { $$.nd = new_ast_node("array", $1.nd, $3.nd); $1.nd = new_ast_node($1.name, NULL, NULL); }
-        | ID {add('V',$1.name);} { $$.nd = new_ast_node($1.name, NULL, NULL); }
+        | ID {add('V',$1.name);} {printf("JWHN %s",$1.name); $$.nd = new_ast_node($1.name, NULL, NULL); }
         ;
 
 Type:
-    INTEGER {insert_type();}
-    | REAL {insert_type();}
-    | CHAR {insert_type();}
-    | BOOLEAN {insert_type();}
-    | ARRAY '[' NUMBER '.' '.' NUMBER ']' OF Type {insert_type();}
+    INTEGER {insert_type(); $$.nd = new_ast_node($1.name, NULL, NULL);}
+    | REAL {insert_type(); $$.nd = new_ast_node($1.name, NULL, NULL);}
+    | CHAR {insert_type(); $$.nd = new_ast_node($1.name, NULL, NULL);}
+    | BOOLEAN {insert_type(); $$.nd = new_ast_node($1.name, NULL, NULL);}
+    | ARRAY '[' NUMBER '.' '.' NUMBER ']' OF Type {insert_type(); $$.nd = new_ast_node($1.name, $9.nd, NULL);}
     ;
 %%
 
