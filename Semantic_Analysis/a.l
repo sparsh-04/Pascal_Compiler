@@ -146,6 +146,7 @@ digit [0-9]
 
 }
 {printStatement} {
+    strcpy(yylval.node_obj.name,(yytext));
    addToken(yytext, "Punctuator");
   return PrintStatement;
 }
@@ -195,46 +196,77 @@ digit [0-9]
     addToken(yytext, "Arithmetic Operators");
         if(strcmp(yytext,"+")==0){
             strcpy(yylval.node_obj.name,(yytext));
-            return '+';
+            return PLUS;
         }
         if(strcmp(yytext,"-")==0){
             strcpy(yylval.node_obj.name,(yytext));
-            return '-';
+            return MINUS;
         }
         if(strcmp(yytext,"*")==0){
             strcpy(yylval.node_obj.name,(yytext));
-            return '*';
+            return MUL;
         }
         if(strcmp(yytext,"%")==0){
             strcpy(yylval.node_obj.name,(yytext));
-            return '%';
+            return MOD;
         }
         if(strcmp(yytext,"/")==0){
             strcpy(yylval.node_obj.name,(yytext));
-            return '/';
+            return DIV;
         }
         return ARITHMETIC_OPERATOR;
 
 }
 {Relational_operators} {
-        if(strcmp(yytext,":=")==0){
-            strcpy(yylval.node_obj.name,(yytext));
-            return AssignOp;
-        }
+    addToken(yytext, "Relational Operators");
+    if(strcmp(yytext,":=")==0){
+        strcpy(yylval.node_obj.name,(yytext));
+        return AssignOp;
+    }
      if(strcmp(yytext,"=")==0){
             strcpy(yylval.node_obj.name,(yytext));
-            return '=';
+            return EQ;
     }
+    if(strcmp(yytext,"<>")==0){
+            strcpy(yylval.node_obj.name,(yytext));
+            return NE;
+    }
+    if(strcmp(yytext,">")==0){
+            strcpy(yylval.node_obj.name,(yytext));
+            return GR;
+    }
+    if(strcmp(yytext,"<")==0){
+            strcpy(yylval.node_obj.name,(yytext));
+            return LESS;
+    }
+     if(strcmp(yytext,">=")==0){
+            strcpy(yylval.node_obj.name,(yytext));
+            return LE;
+    }
+    if(strcmp(yytext,"<=")==0){
+            strcpy(yylval.node_obj.name,(yytext));
+            return GE;
+    }
+
     
-    addToken(yytext, "Relational Operators");
-    return RELATIONAL_OPERATOR;
 }
 {Boolean_operators} {
     addToken(yytext, "Boolean Operators");
     for(int i = 0; yytext[i]; i++) {
                     yytext[i] = tolower(yytext[i]);
                 }
-    return BOOLEAN_OPERATOR;
+    if(strcmp(yytext,"and")==0){
+        strcpy(yylval.node_obj.name,(yytext));
+        return BOOLEAN_OPERATOR;
+    }
+    if(strcmp(yytext,"or")==0){
+        strcpy(yylval.node_obj.name,(yytext));
+        return BOOLEAN_OPERATOR;
+    }
+    if(strcmp(yytext,"not")==0){
+        strcpy(yylval.node_obj.name,(yytext));
+        return NOT;
+    }
 }
 
 {identifier} {
@@ -242,19 +274,26 @@ digit [0-9]
     for(int i = 0; yytext[i]; i++) {
                     yytext[i] = tolower(yytext[i]);
                 }    
+    strcpy(yylval.node_obj.name,(yytext));
     return ID;
 }
 {Number} {
     addToken(yytext, "Number");
-   
+   strcpy(yylval.node_obj.name,(yytext));
     return NUMBER;
 }
 [-]?{digit}+\.{digit}{1,6}  {
     addToken(yytext, "Float Number");
+    strcpy(yylval.node_obj.name,(yytext));
     return FLOAT_NUM; }
 
 {char} {
 return NUMBER;
+}
+
+[\t \r] ;
+\n {
+    lineNum++;
 }
 
 ["].*["]  {
