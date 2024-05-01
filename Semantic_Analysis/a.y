@@ -12,7 +12,7 @@ int search(char *);
 extern int lineNum;
 extern char* yytext;
 int count  = 0,q,sem_errors=0;
-char errors[100][100];
+char errors[1000][1000];
 
 struct symbol_table {
     char * name;
@@ -70,6 +70,7 @@ char *get_type(char *var) {
             return symbol_table[i].data_type;  
         }
     }
+    return "null";
 }
 // Function to set a symbol as initialized
 void initialize_symbol(char *name) {
@@ -154,10 +155,17 @@ void print_ast_InOrder(struct ast_node *node) {
 		char name[100]; 
 		struct ast_node* nd;
 	} node_obj; 
+    struct var_name2 { 
+			char name[100]; 
+			struct node* nd;
+			char type[5];
+		} nd_obj2; 
 } 
 
-%token <node_obj> PROGRAM INTEGER REAL BOOLEAN CHAR VAR TO DOWNTO IF THEN ELSE WHILE FOR DO ARRAY AND OR NOT BEGINI END READ WRITE WRITELN ID PUNCTUATOR ARITHMETIC_OPERATOR BOOLEAN_OPERATOR OF DOT NUMBER PrintStatement OpenB CloseB AssignOp STRING FLOAT_NUM  LE GE LESS GR NE EQ PLUS MINUS MUL DIV MOD
-%type <node_obj> program declaration statements statement assignment_statement if_statement while_statement for_statement read_statement write_statement condition expression variable Type var_lists var_list RELATIONAL_OPERATOR else_statement inc_or_dec assignment_statement_loop
+%token <node_obj> PROGRAM INTEGER REAL BOOLEAN CHAR VAR TO DOWNTO IF THEN ELSE WHILE FOR DO ARRAY AND OR NOT BEGINI END READ WRITE WRITELN ID PUNCTUATOR ARITHMETIC_OPERATOR BOOLEAN_OPERATOR OF DOT NUMBER CHARACTER REAL_NUM PrintStatement OpenB CloseB AssignOp STRING FLOAT_NUM  LE GE LESS GR NE EQ PLUS MINUS MUL DIV MOD
+%type <node_obj> program declaration statements statement assignment_statement if_statement while_statement for_statement read_statement write_statement condition Type var_lists var_list RELATIONAL_OPERATOR else_statement inc_or_dec assignment_statement_loop
+%type <nd_obj2> value expression variable
+
 %%
 
 program: PROGRAM ID ';' declaration BEGINI {add('K',$5.name);} statements END {add('K',$8.name);} '.' {
@@ -203,13 +211,9 @@ statement: assignment_statement { $$.nd = new_ast_node("assignment_statement", $
         ;
 
 assignment_statement: variable AssignOp expression ';' {  $$.nd = new_ast_node($2.name, $1.nd, $3.nd);
-  int t = same_type($1.name, $3.nd->node_type);
-  
- 
-};
-
-assignment_statement_loop: variable AssignOp expression {  $$.nd = new_ast_node($2.name, $1.nd, $3.nd);
-  int t = same_type($1.name, $3.nd->node_type);
+  //  $2.nd = new_ast_node(":=", $3.nd, NULL);
+  int t = same_type($1.name, $3.type);
+  symbol_exists($1.name);
  
 };
 
@@ -292,7 +296,11 @@ RELATIONAL_OPERATOR: LE
                     | NE 
                     ;
 
-expression: expression PLUS expression { $$.nd = new_ast_node($2.name, $1.nd, $3.nd); }
+expression: expression PLUS expression { $$.nd = new_ast_node($2.name, $1.nd, $3.nd); 
+    if(!strcmp($1.type, $3.type)) {  
+        sprintf($$.type, $1.type);  
+
+    } }
           | expression MINUS expression { $$.nd = new_ast_node($2.name, $1.nd, $3.nd); }
           | expression MUL expression { $$.nd = new_ast_node($2.name, $1.nd, $3.nd); }
           | expression DIV expression { $$.nd = new_ast_node($2.name, $1.nd, $3.nd); }
@@ -300,11 +308,33 @@ expression: expression PLUS expression { $$.nd = new_ast_node($2.name, $1.nd, $3
           | '(' expression ')' { $$.nd = new_ast_node("expression", $2.nd, NULL); }
           | '{' expression '}' { $$.nd = new_ast_node("expression", $2.nd, NULL); }
           | '[' expression ']' { $$.nd = new_ast_node("expression", $2.nd, NULL); }
-          | variable { $$.nd = new_ast_node($1.name, NULL, NULL); }
-          | NUMBER {add('C',$1.name);} { $$.nd = new_ast_node($1.name, NULL, NULL);printf("Jbwkd"); }
-          |MINUS NUMBER {add('C',$2.name);} { $$.nd = new_ast_node($1.name, $2.nd, NULL); $2.nd = new_ast_node($2.name, NULL, NULL); }
-          | PLUS NUMBER {add('C',$2.name);} { $$.nd = new_ast_node($1.name, $2.nd, NULL); $2.nd = new_ast_node($2.name, NULL, NULL); }
+          | variable { $$.nd = new_ast_node($1.name, NULL, NULL);
+          strcpy($$.name, $1.name); 
+            sprintf($$.type, $1.type); 
+            
+             }
+          | value {add('C',$1.name);} { $$.nd = new_ast_node($1.name, NULL, NULL);
+            strcpy($$.name, $1.name); 
+            sprintf($$.type, $1.type); 
+        //   strcpy($1.nd->node_type, "C");
+        //   printf("%s", $1.nd->node_type);
+          
+        //   sprintf($$.nd->node_type, $1.nd->node_type);  
+           }
+          |MINUS value {add('C',$2.name);} { $$.nd = new_ast_node($1.name, $2.nd, NULL); $2.nd = new_ast_node($2.name, NULL, NULL); 
+          strcpy($$.name, $2.name); 
+            sprintf($$.type, $2.type); 
+
+            }
+          | PLUS value {add('C',$2.name);} { $$.nd = new_ast_node($1.name, $2.nd, NULL); $2.nd = new_ast_node($2.name, NULL, NULL); 
+                strcpy($$.name, $2.name); 
+                sprintf($$.type, $2.type); 
+           }
         ;
+value:  NUMBER { strcpy($$.name, $1.name); sprintf($$.type, "int"); add('C',$1.name); $$.nd = new_ast_node( $1.name,NULL, NULL); }
+        | REAL_NUM { strcpy($$.name, $1.name); sprintf($$.type, "real"); add('C',$1.name); $$.nd = new_ast_node( $1.name,NULL, NULL);}
+        | CHARACTER { strcpy($$.name, $1.name); sprintf($$.type, "char"); add('C',$1.name); $$.nd = new_ast_node( $1.name,NULL, NULL);}
+        | variable{ strcpy($$.name, $1.name); char *id_type = get_type($1.name); sprintf($$.type, id_type); symbol_initialized($1.name); $$.nd = new_ast_node( $1.name,NULL, NULL);}
 
 variable: ID '[' expression']' { $$.nd = new_ast_node("array", $1.nd, $3.nd); $1.nd = new_ast_node($1.name, NULL, NULL); }
         | ID {add('V',$1.name);} { $$.nd = new_ast_node($1.name, NULL, NULL); }
@@ -331,9 +361,7 @@ int main(int argc, char *argv[]){
 
     printf("\n");
     extern FILE *yyin;
-printf("1\n");
     yyin=fopen(filename, "r+");
-printf("2\n");
     yyparse();
     printf("\n\n");
 	printf("\t\t\t\t\t\t\t\t PHASE 1: LEXICAL ANALYSIS \n\n");
@@ -348,8 +376,8 @@ printf("2\n");
 		free(symbol_table[i].type);
 	}
 	printf("\n\n");
-printf("3\n");
-print_ast_PreOrder(head);
+    printf("3\n");
+    print_ast_PreOrder(head);
     return 0;
 
 }
