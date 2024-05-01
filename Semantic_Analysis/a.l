@@ -45,6 +45,7 @@ Number [0-9]+
 printStatement \".*\"
 char ['].[']
 digit [0-9]
+float {digit}+\.{digit}*
 %%
 
 {keywords} {
@@ -150,7 +151,12 @@ digit [0-9]
    addToken(yytext, "Punctuator");
   return PrintStatement;
 }
+float {
+    addToken(yytext, "Float Number");
+    strcpy(yylval.node_obj.name,(yytext));
+    return REAL_NUM;
 
+}
 "//".* {
     // printf("Comment %s\n",yytext);
     }
@@ -279,7 +285,7 @@ digit [0-9]
 }
 {Number} {
     addToken(yytext, "Number");
-   strcpy(yylval.node_obj.name,(yytext));
+    strcpy(yylval.node_obj.name,(yytext));
     return NUMBER;
 }
 [-]?{digit}+\.{digit}{1,6}  {
@@ -288,7 +294,7 @@ digit [0-9]
     return FLOAT_NUM; }
 
 {char} {
-return NUMBER;
+return CHARACTER;
 }
 
 [\t \r] ;
