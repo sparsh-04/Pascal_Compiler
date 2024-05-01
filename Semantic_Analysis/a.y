@@ -217,6 +217,12 @@ assignment_statement: variable AssignOp expression ';' {  $$.nd = new_ast_node($
  
 };
 
+assignment_statement_loop: variable AssignOp expression {
+    $$.nd = new_ast_node($2.name, $1.nd, $3.nd);
+  int t = same_type($1.name, $3.type);
+  symbol_exists($1.name);
+}
+
 if_statement: IF {add('K',$1.name);} condition THEN BEGINI statements END else_statement ';'{
     $7.nd = new_ast_node("end", NULL, NULL);
    $5.nd = new_ast_node("begin", $6.nd, NULL);
