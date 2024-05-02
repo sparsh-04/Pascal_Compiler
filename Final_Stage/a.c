@@ -6,7 +6,7 @@
 int main() {
     FILE *pascalFile = fopen("code.txt", "r");
     FILE *cFile = fopen("cCode.txt", "w");
-
+    int beginC = 0;
     if (!pascalFile) {
         printf("Unable to open Pascal file\n");
         return 1;
@@ -37,8 +37,48 @@ int main() {
                     line[i] = tolower(line[i]);
                 }
                 memset(final, 0, sizeof(final));
-            
-                if((pos = strstr(line, "integer")) != NULL){
+                if((pos = strstr(line, "array")) != NULL){
+                    pos = strchr(line, ':');
+                    int first = 0;
+                    int last = 0;
+                    for(int j=0;j<strlen(line);j++){
+                        if(line[j]=='['){
+                            // line[j] = '[';
+                            while(line[j++]==" ");
+                            int temp = 0;
+                            while(line[j]>='0' && line[j]<='9') {
+                                temp *=10; 
+                                temp += line[j] - '0';
+                                j++;
+                            }
+                            first = temp;
+                            while(line[j++]==" " || line[j++]=='.');
+                            temp = 0;
+                            while(line[j]>='0' && line[j]<='9') {
+                                temp *=10; 
+                                temp += line[j] - '0';
+                                j++;
+                            }
+                            last  = temp;
+                            printf("temp: %d %d\n", first,last);
+                        }
+
+                    }
+                    int j=0;
+                    for(;j<strlen(line);j++){
+                        if(line[j]==':'){
+                            break;
+                        }
+                    
+                    }
+                        char te[100] ;
+                        memset(te, 0, sizeof(te));
+                        strncpy(te,line, j-1);
+                        // printf("final: %s\n", final);
+                        sprintf(final, "int %s[%d];", te, last-first);
+                        printf("final: %s\n", final);
+                }
+                else if((pos = strstr(line, "integer")) != NULL){
                     pos = strchr(line, ':');
                     strncpy(final, "int ", 4);
                     strncat(final, line, pos - line);
@@ -56,9 +96,16 @@ int main() {
                     strncat(final, line, pos - line);
                     strcat(final, ";");
                 }
+                else if((pos = strstr(line, "char")) != NULL){
+                    pos = strchr(line, ':');
+                    strncpy(final, "char ", 4);
+                    strncat(final, line, pos - line);
+                    strcat(final, ";");
+                }
                 else if((pos = strstr(line, "begin")) != NULL){
                     strcpy(final, "");
                     break;
+                sprintf(final, "%s", final);
                 }
                 else{
                     strcpy(final, "");
@@ -73,14 +120,22 @@ int main() {
     
         if((pos = strstr(line, "begin")) != NULL){
                     printf("Found begin\n");
-                    strcpy(final, "");
+                    if(beginC)
+                    strcpy(final, "{");
+                    beginC = 1;
                 }
         if((pos = strstr(line, "end;")) != NULL)
-            strncpy(pos, "}   ", 4);
-
-        if((pos = strstr(line, ":=")) != NULL)
+            strcpy(final, "}");
+        if((pos = strstr(line, "end.")) != NULL)
+            strcpy(final, "}");
+        if((pos = strstr(line, ":=")) != NULL){
             strncpy(pos, "= ", 2);
-
+            strcpy(final, line);
+        }
+        if((pos = strstr(line,"if")) != NULL){
+            strncpy(pos, "if", 2);
+            strcat(pos, " ");
+        }
         if((pos = strstr(line, "write")) != NULL){
             printf(" initial ---> ");
             printf(line);
@@ -126,12 +181,53 @@ int main() {
             printf("<--");
 //printf("%d %d %d ",number,D,KLNSDKJKL) ;
 
+            strncpy(pos, "printf", 5);
         }
 
         if((pos = strstr(line, "read(")) != NULL)
             strncpy(pos, "scanf ", 6);
+       if((pos=strstr(line,"else"))!=NULL){
+                if((pos = strstr(line,"if"))!=NULL){
+            line[pos-line+2]='(';
+            if((pos=strstr(line,"then"))!=NULL){
+                line[pos-line-1]=')';
+                for(int i=0;i<=3;i++)
+                line[pos-line+i]='\0';
+            }
+            
+            int i=0;
+            while(line[i]!='\0')i++;
+            line[i+1]='{';
+            strncpy(final,line,i+1);
+           
+        }
+        else {strncpy(final,line,sizeof(line));}
+            }
+        if((pos = strstr(line,"if"))!=NULL){
+            line[pos-line+2]='(';
+            if((pos=strstr(line,"then"))!=NULL){
+                line[pos-line-1]=')';
+                for(int i=0;i<=3;i++)
+                line[pos-line+i]='\0';
+            }
+            
+            int i=0;
+            while(line[i]!='\0')i++;
+            
+            strncpy(final,line,i);
+           
+        }
+        if((pos=strstr(line,"while"))!=NULL){
+        line[pos-line+5]='(';
+        if((pos=strstr(line,"do"))!=NULL){
+             line[pos-line-1]=')';
+                for(int i=0;i<=1;i++)
+                line[pos-line+i]='\0';
 
-
+        }int j=0;
+        while(line[j]!='\0')j++;
+            strncpy(final,line,j);
+        }
         fputs(final, cFile);
         fputs("\n", cFile);
         strcpy(final, "");

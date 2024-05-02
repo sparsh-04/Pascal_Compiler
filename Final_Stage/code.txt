@@ -4,6 +4,7 @@ vaR
   skan,asf,as : real;
   asg,greg,hjer :   boolean
 begin
+<<<<<<< HEAD
 
   write("Entervsdvber:");
   write("Enter a numdsvsdvber:");
@@ -11,7 +12,20 @@ begin
   read(number);
   b := 20;
   for a := 10 to 20 do
+=======
+  if a < 10 then
+>>>>>>> a0aa0bb7cf50c5dea933f954fea6aacaa1f33cdf
   begin
-    count := 1;
+  count := 1;
+  count:=2;
+  end
+  else
+  begin
+  count:= 3;
   end;
+
+
 end.
+
+
+
