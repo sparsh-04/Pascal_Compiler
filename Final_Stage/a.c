@@ -117,7 +117,6 @@ int main() {
 
             }
         }
-    
         if((pos = strstr(line, "begin")) != NULL){
                     printf("Found begin\n");
                     if(beginC)
@@ -126,8 +125,11 @@ int main() {
                 }
         if((pos = strstr(line, "end;")) != NULL)
             strcpy(final, "}");
-        if((pos = strstr(line, "end.")) != NULL)
+        else if((pos = strstr(line, "end.")) != NULL)
             strcpy(final, "}");
+        else if((pos = strstr(line, "end")) != NULL){
+            strcpy(final, "}");
+        }
         if((pos = strstr(line, ":=")) != NULL){
             strncpy(pos, "= ", 2);
             strcpy(final, line);
@@ -137,8 +139,8 @@ int main() {
             strcat(pos, " ");
         }
         if((pos = strstr(line, "write")) != NULL){
-            printf(" initial ---> ");
-            printf(line);
+            // printf(" initial ---> ");
+            // printf(line);
             
             int len = strlen(line);
             for(int j=len-2;j>=0;j--){
@@ -175,7 +177,7 @@ int main() {
 
             strncpy(final, "bool ", 4);
 
-            printf(" modified ---> ");
+            // printf(" modified ---> ");
             printf(line);
             strcpy(final,line);
             printf("<--");
@@ -234,8 +236,7 @@ int main() {
     }
     // strcpy(final, "");
     memset(final, 0, sizeof(final));
-    
-    sprintf(final, "FILE *pascalFile = fopen("code.txt", "r");\n");
+    // sprintf(final, "FILE *pascalFile = fopen("code.txt", "r");"); 
     memset(final, 0, sizeof(final));
     sprintf(final, "return 0;\n}");
     fputs(final, cFile);
