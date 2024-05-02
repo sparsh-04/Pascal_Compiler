@@ -125,8 +125,11 @@ int main() {
                 }
         if((pos = strstr(line, "end;")) != NULL)
             strcpy(final, "}");
-        if((pos = strstr(line, "end.")) != NULL)
+        else if((pos = strstr(line, "end.")) != NULL)
             strcpy(final, "}");
+        else if((pos = strstr(line, "end")) != NULL){
+            strcpy(final, "}");
+        }
         if((pos = strstr(line, ":=")) != NULL){
             strncpy(pos, "= ", 2);
             strcpy(final, line);
@@ -136,6 +139,50 @@ int main() {
             strcat(pos, " ");
         }
         if((pos = strstr(line, "write")) != NULL){
+            // printf(" initial ---> ");
+            // printf(line);
+            
+            int len = strlen(line);
+            for(int j=len-2;j>=0;j--){
+                line[j+1] = line[j];
+            }
+            strncpy(pos, "printf", 6);
+
+            int comma = 0; //keep count of ','
+            if(pos[7] != '"'){
+                for(int i=0;pos[i]!= ')';i++){
+                    if(pos[i] == ','){
+                        comma++;
+                    }
+                }
+                //extra characters '"",' and then '%d ' comma+1 times
+                //total (comma+2)*3
+                int push = (comma+1)*3 + 3;
+                len = strlen(line);
+                for(int j = len;j>=0;j--){
+                    line[j+push] = line[j];
+                }
+                pos[7] = '"';
+                int temppos = 8;
+
+                while(comma-- > -1){
+                    pos[temppos++] = '*';
+                    pos[temppos++] = 'd';
+                    pos[temppos++] = ' ';
+                }
+                pos[temppos++] = '"';
+                pos[temppos]   = ',';
+            }
+            
+
+            strncpy(final, "bool ", 4);
+
+            // printf(" modified ---> ");
+            printf(line);
+            strcpy(final,line);
+            printf("<--");
+//printf("%d %d %d ",number,D,KLNSDKJKL) ;
+
             strncpy(pos, "printf", 5);
         }
 
@@ -187,7 +234,12 @@ int main() {
         fputs("\n", cFile);
         strcpy(final, "");
     }
-
+    // strcpy(final, "");
+    memset(final, 0, sizeof(final));
+    // sprintf(final, "FILE *pascalFile = fopen("code.txt", "r");"); 
+    memset(final, 0, sizeof(final));
+    sprintf(final, "return 0;\n}");
+    fputs(final, cFile);
     fclose(pascalFile);
     fclose(cFile);
 

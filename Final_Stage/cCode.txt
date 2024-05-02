@@ -7,6 +7,12 @@ int   number, count, a , b;
 float   skan,asf,as ;
 bool  asg,greg,hjer ;
 
+<<<<<<< HEAD
+
+  printf("entervsdvber:");
+  printf("enter a numdsvsdvber:");
+  printf("*d *d *d ",number, k , klnsdjk);
+=======
   if(a < 10)
 
 
@@ -16,6 +22,7 @@ bool  asg,greg,hjer ;
 
 
 
+>>>>>>> a0aa0bb7cf50c5dea933f954fea6aacaa1f33cdf
 
 
 
