@@ -21,11 +21,11 @@ int main() {
             line[i] = tolower(line[i]);
         }
         memset(final, 0, sizeof(final));
-        printf("%s\n", line);
+        // printf("%s\n", line);
 
         char *pos;
         if((pos = strstr(line, "program")) != NULL){
-            strcpy(final, "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <ctype.h>\n#include <stdbool.h>\nint main(){");
+            strcpy(final, "#include <stdio.h>\n#include <stdio.h>\n#include <ctype.h>\n#include <stdlib.h>\n#include <string.h>\n#include <ctype.h>\n#include <stdbool.h>\nint main(){");
             fputs(final, cFile);
             fputs("\n", cFile);
             strcpy(final, "");
@@ -61,7 +61,7 @@ int main() {
                                 j++;
                             }
                             last  = temp;
-                            printf("temp: %d %d\n", first,last);
+                            // printf("temp: %d %d\n", first,last);
                         }
 
                     }
@@ -77,7 +77,7 @@ int main() {
                         strncpy(te,line, j-1);
                         // printf("final: %s\n", final);
                         sprintf(final, "int %s[%d];", te, last-first);
-                        printf("final: %s\n", final);
+                        // printf("final: %s\n", final);
                 }
                 else if((pos = strstr(line, "integer")) != NULL){
                     pos = strchr(line, ':');
@@ -119,7 +119,6 @@ int main() {
             }
         }
         if((pos = strstr(line, "begin")) != NULL){
-                    printf("Found begin\n");
                     if(beginC)
                     strcpy(final, "{");
                     beginC = 1;
@@ -142,8 +141,6 @@ int main() {
             strcat(pos, " ");
         }
         if((pos = strstr(line, "write")) != NULL){
-            // printf(" initial ---> ");
-            // printf(line);
             
             int len = strlen(line);
             for(int j=len-2;j>=0;j--){
@@ -177,21 +174,14 @@ int main() {
                 pos[temppos]   = ',';
                 strncpy(pos, "printf(", 7);
             }
-            
-
-
-            // printf(" modified ---> ");
-            printf(line);
             strcpy(final,line);
-            printf("<--");
-//printf("%d %d %d ",number,D,KLNSDKJKL) ;
 
             strncpy(pos, "printf", 5);
         }
 
         if((pos = strstr(line, "read(")) != NULL)
             strncpy(pos, "scanf ", 6);
-       if((pos=strstr(line,"else"))!=NULL){
+        if((pos=strstr(line,"else"))!=NULL){
                 if((pos = strstr(line,"if"))!=NULL){
             line[pos-line+2]='(';
             if((pos=strstr(line,"then"))!=NULL){
@@ -238,25 +228,66 @@ int main() {
         strcpy(final, "");
     }
     // strcpy(final, "");
-    while (fgets(line, sizeof(line), cFile)) {
-        printf("AAA%s\n", line);
+    fclose(cFile);
+    FILE * cFile2 = fopen("b.c", "r");
+    FILE * cFile3 = fopen("c.c", "w");
+    printf("%d",fgets(line, sizeof(line), cFile2));
+
+    while (fgets(line, sizeof(line), cFile2)) {
+        memset(final, 0, sizeof(final));
+        // printf("%s\n", line);
+
+        char *pos;
+        char newLine[256]; // Make sure this is large enough
+    int i, j = 0;
+
+    for(i = 0; i < strlen(line); i++) {
+        if(line[i] == '<' && line[i+1] == '>') {
+            newLine[j++] = '!';
+            newLine[j++] = '=';
+            i+=2; // Skip the next character
+        }
+        if(i+1<strlen(line) && line[i] == 'o' && line[i+1] == 'r') {
+            newLine[j++] = '|';
+            newLine[j++] = '|';
+            i+=2; // Skip the next character
+        }
+        if(i+2<strlen(line) && line[i] == 'n' && line[i+1] == 'o' && line[i+2] == 't'){
+            newLine[j++] = '!';
+            i += 3;
+        }
+        if(i+2<strlen(line) && line[i] == 'a' && line[i+1] == 'n' && line[i+2] == 'd'){
+            newLine[j++] = '&';
+            newLine[j++] = '&';
+            i += 2;
+        }
+         else {
+            newLine[j++] = line[i];
+        }
     }
+    newLine[j] = '\0';
+
+        printf("AAA%s\n", newLine);
+        fprintf(cFile2,newLine);
+        fputs(newLine, cFile3);
+        // printf("AAA%s\n", line);
+    }
+    
     memset(final, 0, sizeof(final));
     sprintf(final, "FILE *file = fopen(\"code.txt\",\"r\");");  
-    fputs(final, cFile);
-
-    // system("gcc b.c -o output.out && ./output.out");
+    fputs(final, cFile3);
+    // system("rm b.c");
+    // system("gcc c.c -o output.out && ./output.out");
     memset(final, 0, sizeof(final));
-    
-
-
-
+    // for(int i=0;i<n;i++){
+    //     fprintf(f,)
+    // }
 
     memset(final, 0, sizeof(final));
     sprintf(final, "return 0;\n}");
-    fputs(final, cFile);
+    fputs(final, cFile3);
     fclose(pascalFile);
-    fclose(cFile);
+    
 
     printf("Conversion completed. The C code has been written to cCode.txt\n");
     
