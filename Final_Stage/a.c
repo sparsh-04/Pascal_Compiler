@@ -5,7 +5,7 @@
 
 int main() {
     FILE *pascalFile = fopen("code.txt", "r");
-    FILE *cFile = fopen("cCode.txt", "w");
+    FILE *cFile = fopen("b.c", "w");
     int beginC = 0;
     if (!pascalFile) {
         printf("Unable to open Pascal file\n");
@@ -14,6 +14,7 @@ int main() {
 
     char line[256];
     char final[256];
+    
     while (fgets(line, sizeof(line), pascalFile)) {
         // Convert the string line to lower case
         for(int i = 0; line[i]; i++){
@@ -24,7 +25,7 @@ int main() {
 
         char *pos;
         if((pos = strstr(line, "program")) != NULL){
-            strcpy(final, "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <ctype.h>\nint main(){");
+            strcpy(final, "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <ctype.h>\n#include <stdbool.h>\nint main(){");
             fputs(final, cFile);
             fputs("\n", cFile);
             strcpy(final, "");
@@ -125,8 +126,10 @@ int main() {
                 }
         if((pos = strstr(line, "end;")) != NULL)
             strcpy(final, "}");
-        else if((pos = strstr(line, "end.")) != NULL)
-            strcpy(final, "}");
+        else if((pos = strstr(line, "end.")) != NULL){
+            strcpy(final, "");
+            break;
+        }
         else if((pos = strstr(line, "end")) != NULL){
             strcpy(final, "}");
         }
@@ -166,16 +169,16 @@ int main() {
                 int temppos = 8;
 
                 while(comma-- > -1){
-                    pos[temppos++] = '*';
+                    pos[temppos++] = '\%';
                     pos[temppos++] = 'd';
                     pos[temppos++] = ' ';
                 }
                 pos[temppos++] = '"';
                 pos[temppos]   = ',';
+                strncpy(pos, "printf(", 7);
             }
             
 
-            strncpy(final, "bool ", 4);
 
             // printf(" modified ---> ");
             printf(line);
@@ -235,8 +238,20 @@ int main() {
         strcpy(final, "");
     }
     // strcpy(final, "");
+    while (fgets(line, sizeof(line), cFile)) {
+        printf("AAA%s\n", line);
+    }
     memset(final, 0, sizeof(final));
-    // sprintf(final, "FILE *pascalFile = fopen("code.txt", "r");"); 
+    sprintf(final, "FILE *file = fopen(\"code.txt\",\"r\");");  
+    fputs(final, cFile);
+
+    // system("gcc b.c -o output.out && ./output.out");
+    memset(final, 0, sizeof(final));
+    
+
+
+
+
     memset(final, 0, sizeof(final));
     sprintf(final, "return 0;\n}");
     fputs(final, cFile);
@@ -244,6 +259,6 @@ int main() {
     fclose(cFile);
 
     printf("Conversion completed. The C code has been written to cCode.txt\n");
-
+    
     return 0;
 }
