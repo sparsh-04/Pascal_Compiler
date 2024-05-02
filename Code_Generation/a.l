@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "useless.h"
-#include "y.tab.h"
+#include "a.tab.h"
 #include <ctype.h>
 
 #define YY_SKIP_YYWRAP

@@ -232,7 +232,13 @@ int main() {
         fputs("\n", cFile);
         strcpy(final, "");
     }
-
+    // strcpy(final, "");
+    memset(final, 0, sizeof(final));
+    
+    sprintf(final, "FILE *pascalFile = fopen("code.txt", "r");\n");
+    memset(final, 0, sizeof(final));
+    sprintf(final, "return 0;\n}");
+    fputs(final, cFile);
     fclose(pascalFile);
     fclose(cFile);
 
