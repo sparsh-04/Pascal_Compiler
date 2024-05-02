@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-    #include<ctype.h>
-    #include "useless.h"
+#include<ctype.h>
+#include "useless.h"
 
 void yyerror(char *s);
 int yylex(void);
@@ -21,6 +21,11 @@ int is_while =0;
 char buff[100];
 char icg[50][100];
 char var_nam[50];
+char else_body_label[50];
+char after_if[50];
+int t = 0;
+int isFirst = 0;
+int first_exp = 0;
 
 struct symbol_table {
     char * name;
@@ -33,7 +38,6 @@ struct symbol_table {
 int search(char *type) { 
     int i; 
     for(i=count-1; i>=0; i--) {
-        // printf("%s   %s]\n",symbol_table[i].name, type);
         if(strcmp(symbol_table[i].name, type)==0) {   
             return -1;
             break;  
@@ -61,7 +65,6 @@ int symbol_exists(char *name) {
     }
     sprintf(errors[sem_errors], "Line %d: Variable \"%s\" not declared before usage!\n", lineNum+1, name);  
         sem_errors++;    
-
     return 0;
 }
 int symbol_initialized(char *name) {
@@ -80,6 +83,7 @@ char *get_type(char *var) {
     }
     return "null";
 }
+
 // Function to set a symbol as initialized
 void initialize_symbol(char *name) {
     for (int i = 0; i < symbol_count; i++) {
@@ -149,8 +153,8 @@ void print_ast_InOrder(struct ast_node *node) {
 
 %}
 %left BOOLEAN_OPERATOR
-%left '+' '-'
-%left '*' '/' '%'
+%left '+' PLUS MINUS '-'
+%left '*' '/' '%' MUL DIV MOD
 // %left NOT 
 
 %union { 
@@ -216,15 +220,15 @@ statement: assignment_statement {
     $$.nd = new_ast_node("assignment_statement", $1.nd, NULL);
 
     }
-        | if_statement { $$.nd = $1.nd;}
+        | if_statement {$$.nd = $1.nd;}
         | while_statement  { $$.nd = $1.nd;}
         | for_statement { $$.nd = $1.nd; }
         | read_statement { $$.nd = $1.nd; }
         | write_statement { $$.nd = $1.nd; }
         ;
 
-assignment_statement: variable AssignOp expression ';' {  $$.nd = new_ast_node($2.name, $1.nd, $3.nd);
-  //  $2.nd = new_ast_node(":=", $3.nd, NULL);
+assignment_statement: variable AssignOp expression ';' {  
+    $$.nd = new_ast_node($2.name, $1.nd, $3.nd);
   sprintf(icg[ic_idx++], "%s %s %s\n", $1.name, $2.name, $3.name);
   int t = same_type($1.name, $3.type);
   symbol_exists($1.name);
@@ -235,33 +239,27 @@ assignment_statement_loop: variable AssignOp expression {sprintf(icg[ic_idx++], 
   int t = same_type($1.name, $3.type);
   symbol_exists($1.name);
   strcpy(var_nam, $1.name);
-
 }
 
-if_statement: IF {add('K',$1.name);} condition { sprintf(icg[ic_idx++], "\nLABEL %s:\n", $3.if_body); } THEN BEGINI statements END else_statement { sprintf(icg[ic_idx++], "\nLABEL %s:\n", $3.else_body); }';'{
+if_statement: IF {add('K',$1.name);} condition { sprintf(icg[ic_idx++], "\nLABEL %s:\n", $3.if_body); } THEN BEGINI statements END {
+    sprintf(after_if, "%d", label++);
+    // after_if = label++;
+     sprintf(icg[ic_idx++], "GOTO L%s\n", after_if); strcpy(else_body_label , $3.else_body);} else_statement ';'{
     $8.nd = new_ast_node("end", NULL, NULL);
    $6.nd = new_ast_node("begin", $8.nd, NULL);
    $5.nd = new_ast_node("then", $6.nd, $8.nd);
    $1.nd = new_ast_node("if", $3.nd, $5.nd);
-    $$.nd = new_ast_node("if_statement_with_else", $1.nd, $9.nd);
-    sprintf(icg[ic_idx++], "GOTO next\n");
+    $$.nd = new_ast_node("if_statement_with_else", $1.nd, $10.nd);
+    sprintf(icg[ic_idx++], "\nLABEL L%s:\n", after_if);
 
    }
-    | IF {add('K',$1.name);} condition THEN BEGINI statements END ';' {
-        $5.nd = new_ast_node("begin", $6.nd, NULL);
-        $4.nd = new_ast_node("then", $5.nd, NULL);
-        $1.nd = new_ast_node("if", $3.nd, $4.nd);
-        $$.nd = new_ast_node("if statement without else", $1.nd, $7.nd);
-        sprintf(icg[ic_idx++], "GOTO next\n");
-    }
-    ;
 
-else_statement: ELSE {add('K',$1.name);} BEGINI statements END {
-    $5.nd = new_ast_node("end", NULL, NULL);
-    $3.nd = new_ast_node("begin", $4.nd, NULL);
-    $$.nd = new_ast_node("else", $3.nd, $5.nd);
+else_statement: ELSE {add('K',$1.name);} { sprintf(icg[ic_idx++], "\nLABEL %s:\n", else_body_label); } BEGINI statements END {
+    $6.nd = new_ast_node("end", NULL, NULL);
+    $4.nd = new_ast_node("begin", $5.nd, NULL);
+    $$.nd = new_ast_node("else", $4.nd, $6.nd);
 }
-|
+| { sprintf(icg[ic_idx++], "\nLABEL %s:\n", else_body_label); }
 ;
 
 while_statement: WHILE {add('K',$1.name); is_while=1;} { sprintf(icg[ic_idx++], "\nLABEL L%d:\n", label); } condition DO BEGINI statements END ';'{
@@ -285,23 +283,27 @@ inc_or_dec: TO {sprintf(icg[ic_idx++], "\nLABEL L%d:\n", label); sprintf($<nd_ob
     $5.nd = new_ast_node("do", $6.nd, $8.nd);
     $1.nd = new_ast_node("to", $3.nd, $5.nd);
     $$.nd = new_ast_node("increment", $1.nd, $5.nd);
+    sprintf(icg[ic_idx++], buff);
     sprintf(icg[ic_idx++], "%s := %s+1\n", var_nam , var_nam);
     sprintf(icg[ic_idx++], "JUMP to %s\n", $<nd_obj3>2.if_body);
     sprintf(icg[ic_idx++], "\nLABEL %s:\n", $<nd_obj3>2.else_body);
     
 };
-| DOWNTO expression DO BEGINI statements END {
-    $6.nd = new_ast_node("end", NULL, NULL);
-    $3.nd = new_ast_node("begin", $4.nd, NULL);
-    $3.nd = new_ast_node("do", $4.nd, $6.nd);
-    $1.nd = new_ast_node("downto", $2.nd, $3.nd);
-    $$.nd = new_ast_node("decrement", $1.nd, $3.nd);
-    sprintf($$.if_body , "L%s", label++);
-    sprintf($$.else_body, "L%s", label++);
+| DOWNTO {sprintf(icg[ic_idx++], "\nLABEL L%d:\n", label); sprintf($<nd_obj3>$.if_body , "L%d", label++);sprintf($<nd_obj3>$.else_body, "L%d", label++);} expression {sprintf(icg[ic_idx++], "if not (%s < %s) GOTO %s\n",var_nam,$3.name, $<nd_obj3>2.else_body);} DO BEGINI statements END {
+    $8.nd = new_ast_node("end", NULL, NULL);
+    $6.nd = new_ast_node("begin", $5.nd, NULL);
+    $5.nd = new_ast_node("do", $6.nd, $8.nd);
+    $1.nd = new_ast_node("downto", $3.nd, $5.nd);
+    $$.nd = new_ast_node("decrement", $1.nd, $5.nd);
+    sprintf(icg[ic_idx++], buff);
+    sprintf(icg[ic_idx++], "%s := %s-1\n", var_nam , var_nam);
+    sprintf(icg[ic_idx++], "JUMP to %s\n", $<nd_obj3>2.if_body);
+    sprintf(icg[ic_idx++], "\nLABEL %s:\n", $<nd_obj3>2.else_body);
 };
 
 read_statement: READ {add('K',$1.name);} '(' variable ')' ';' {
     $$.nd = new_ast_node("read", $4.nd, NULL);
+    sprintf(icg[ic_idx++], "Read: %s\n", $4.name);
 };
 
 write_statement: WRITE {add('K',$1.name);} print_or_var ';'  { 
@@ -310,7 +312,7 @@ write_statement: WRITE {add('K',$1.name);} print_or_var ';'  {
 
 print_or_var: '(' PrintStatement ')' {
     $$.nd = new_ast_node($2.name, NULL, NULL); 
-    // $$.nd = new_ast_node("PrintStatement", NULL, NULL)
+    sprintf(icg[ic_idx++], "Write: %s\n", $2.name);
 };
 
 | '(' var_list ')'  {
@@ -320,23 +322,58 @@ print_or_var: '(' PrintStatement ')' {
 condition: expression RELATIONAL_OPERATOR expression { 
     $$.nd = new_ast_node($2.name, $1.nd, $3.nd); 
     if(is_while){
-        sprintf(icg[ic_idx++], "\nif NOT (%s %s %s) GOTO L%d\n", $1.name,$2.name,$3.name,label+1);
+        sprintf(icg[ic_idx++], "if NOT (%s %s %s) GOTO L%d\n", $1.name,$2.name,$3.name,label+1);
         sprintf($$.if_body , "L%d", label++);
         sprintf($$.else_body , "L%d", label++);
         is_while = 0;
     }
-    else if(is_for){
-
-    }else{
-        sprintf(icg[ic_idx++], "\nif (%s %s %s) GOTO L%d else GOTO L%d\n", $1.name,$2.name,$3.name, label, label+1);
+   else{
+        sprintf(icg[ic_idx++], "if (%s %s %s) GOTO L%d else GOTO L%d\n", $1.name,$2.name,$3.name, label, label+1);
         sprintf($$.if_body , "L%d", label++);
         sprintf($$.else_body , "L%d", label++);
     }
 }
-        | variable {$$.nd = new_ast_node($1.name, NULL,NULL); }
-        | NOT variable {$$.nd = new_ast_node("NOT", $2.nd,NULL);}
+        | variable {
+            $$.nd = new_ast_node($1.name, NULL,NULL);
+        if(is_while){
+        sprintf(icg[ic_idx++], "if (%s is FALSE) GOTO L%d\n", $1.name,label+1);
+        sprintf($$.if_body , "L%d", label++);
+        sprintf($$.else_body , "L%d", label++);
+        is_while = 0;
+            }
+        else{
+                sprintf(icg[ic_idx++], "if (%s is TRUE) GOTO L%d else GOTO L%d\n", $1.name, label, label+1);
+                sprintf($$.if_body , "L%d", label++);
+                sprintf($$.else_body , "L%d", label++);
+            }
+             }
+        | NOT variable {$$.nd = new_ast_node("NOT", $2.nd,NULL);
+        if(is_while){
+        sprintf(icg[ic_idx++], "if (%s is TRUE) GOTO L%d\n", $1.name,label+1);
+        sprintf($$.if_body , "L%d", label++);
+        sprintf($$.else_body , "L%d", label++);
+        is_while = 0;
+            }
+        else{
+                sprintf(icg[ic_idx++], "if (%s is TRUE) GOTO L%d else GOTO L%d\n", $1.name, label, label+1);
+                sprintf($$.if_body , "L%d", label++);
+                sprintf($$.else_body , "L%d", label++);
+            }
+        }
         | '(' condition ')' { $$.nd = new_ast_node("condition", $2.nd, NULL); }
-        | expression EQ expression { $$.nd = new_ast_node($2.name, $1.nd, $3.nd); }
+        | expression EQ expression { $$.nd = new_ast_node($2.name, $1.nd, $3.nd);
+        if(is_while){
+            sprintf(icg[ic_idx++], "if NOT (%s %s %s) GOTO L%d\n", $1.name,$2.name,$3.name,label+1);
+            sprintf($$.if_body , "L%d", label++);
+            sprintf($$.else_body , "L%d", label++);
+            is_while = 0;
+        }
+        else{
+            sprintf(icg[ic_idx++], "if (%s %s %s) GOTO L%d else GOTO L%d\n", $1.name,$2.name,$3.name, label, label+1);
+            sprintf($$.if_body , "L%d", label++);
+            sprintf($$.else_body , "L%d", label++);
+        }
+        }
         | condition BOOLEAN_OPERATOR condition { $$.nd = new_ast_node($2.name, $1.nd, $3.nd); }
         ;
 
@@ -347,29 +384,48 @@ RELATIONAL_OPERATOR: LE
                     | NE 
                     ;
 
-expression: expression PLUS expression { $$.nd = new_ast_node($2.name, $1.nd, $3.nd); 
+expression: expression PLUS expression { 
+    $$.nd = new_ast_node($2.name, $1.nd, $3.nd); 
+    sprintf($$.name , "t%d", t++);
+    sprintf(icg[ic_idx++], "%s = %s %s %s\n", $$.name, $1.name, $2.name, $3.name);
     if(!strcmp($1.type, $3.type)) {  
         sprintf($$.type, $1.type);  
 
     } }
-          | expression MINUS expression { 
+    | expression RELATIONAL_OPERATOR expression {
+        $$.nd = new_ast_node($2.name, $1.nd, $3.nd);
+        sprintf($$.name , "t%d", t++);
+        sprintf(icg[ic_idx++], "%s = %s %s %s\n", $$.name, $1.name, $2.name, $3.name);
+        }
+            
+    | expression MINUS expression { 
             $$.nd = new_ast_node($2.name, $1.nd, $3.nd);
-            sprintf(icg[ic_idx++], "%s = %s %s %s\n",  $$.name, $1.name, $2.name, $3.name);
+            sprintf($$.name , "t%d", t++);
+            sprintf(icg[ic_idx++], "%s = %s %s %s\n", $$.name, $1.name, $2.name, $3.name);
             }
-          | expression MUL expression { $$.nd = new_ast_node($2.name, $1.nd, $3.nd); sprintf(icg[ic_idx++], "%s %s %s;\n",  $$.name, $1.name, $2.name, $3.name); }
-          | expression DIV expression { $$.nd = new_ast_node($2.name, $1.nd, $3.nd); sprintf(icg[ic_idx++], "%s %s %s;\n",  $$.name, $1.name, $2.name, $3.name);}
-          | expression MOD expression  { $$.nd = new_ast_node($2.name, $1.nd, $3.nd); sprintf(icg[ic_idx++], "%s %s %s;\n",  $$.name, $1.name, $2.name, $3.name);}
-          | '(' expression ')' { $$.nd = new_ast_node("expression", $2.nd, NULL); }
+          | expression MUL expression { 
+            $$.nd = new_ast_node($2.name, $1.nd, $3.nd);
+            sprintf($$.name , "t%d", t++);
+            sprintf(icg[ic_idx++], "%s = %s %s %s\n", $$.name, $1.name, $2.name, $3.name);
+            }
+          | expression DIV expression { 
+            $$.nd = new_ast_node($2.name, $1.nd, $3.nd); 
+            sprintf($$.name , "t%d", t++);
+            sprintf(icg[ic_idx++], "%s = %s %s %s\n", $$.name, $1.name, $2.name, $3.name);}
+          | expression MOD expression  { 
+            $$.nd = new_ast_node($2.name, $1.nd, $3.nd); 
+            sprintf($$.name , "t%d", t++);
+            sprintf(icg[ic_idx++], "%s = %s %s %s\n", $$.name, $1.name, $2.name, $3.name);
+            }
+          | '(' expression ')' { $$ = $2; }
           | '{' expression '}' { $$.nd = new_ast_node("expression", $2.nd, NULL); }
           | '[' expression ']' { $$.nd = new_ast_node("expression", $2.nd, NULL); }
           | variable { 
             $$.nd = new_ast_node($1.name, NULL, NULL);
-            // sprintf(icg[ic_idx++], "%s %s;\n",$$.name ,  $1.name); 
             strcpy($$.name, $1.name); 
             sprintf($$.type, $1.type); 
             }
           | value {add('C',$1.name);} { $$.nd = new_ast_node($1.name, NULL, NULL);
-            // sprintf(icg[ic_idx++], "%s %s;\n",$$.name , $1.name); 
             strcpy($$.name, $1.name); 
             sprintf($$.type, $1.type);
            }
@@ -377,13 +433,13 @@ expression: expression PLUS expression { $$.nd = new_ast_node($2.name, $1.nd, $3
                 $$.nd = new_ast_node($1.name, $2.nd, NULL); $2.nd = new_ast_node($2.name, NULL, NULL); 
                 strcpy($$.name, $2.name); 
                 sprintf($$.type, $2.type); 
-                sprintf(icg[ic_idx++], "%s %s;\n", $1.name, $2.name);
+                // sprintf(icg[ic_idx++], "%s %s;\n", $1.name, $2.name);
 
             }
           | PLUS value {add('C',$2.name);} { $$.nd = new_ast_node($1.name, $2.nd, NULL); $2.nd = new_ast_node($2.name, NULL, NULL); 
                 strcpy($$.name, $2.name); 
                 sprintf($$.type, $2.type); 
-                sprintf(icg[ic_idx++], "%s %s;\n",$1.name, $2.name);
+                // sprintf(icg[ic_idx++], "%s %s;\n",$1.name, $2.name);
            }
         ;
 value:  NUMBER { strcpy($$.name, $1.name); sprintf($$.type, "int"); add('C',$1.name); $$.nd = new_ast_node( $1.name,NULL, NULL); }
