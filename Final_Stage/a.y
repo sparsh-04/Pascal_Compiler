@@ -383,8 +383,9 @@ condition: expression RELATIONAL_OPERATOR expression { $$.nd = new_ast_node($2.n
                     symbol_initialized($2.name);
                     int k = findVar($2.name);
                     int t = same_type($2.name,"integer",symbol_table[k].data_type, "integer");}
-        | NOT condition {$$.nd = new_ast_node("NOT", $2.nd,NULL);} 
+
         | '(' condition ')' { $$.nd = new_ast_node("condition", $2.nd, NULL); }
+        | NOT condition {$$.nd = new_ast_node("NOT", $2.nd,NULL);} 
         | expression EQ expression { $$.nd = new_ast_node($2.name, $1.nd, $3.nd); 
                                     if(!strcmp($1.type, $3.type)) {  
                                     sprintf(errors[sem_errors], "Line %d: Variable name \"%s\" and \"%s\" are of different types!\n", lineNum+1,$1.name,$3.name );
@@ -516,7 +517,7 @@ int main(int argc, char *argv[]){
     extern FILE *yyin;
     yyin=fopen(filename, "r+");
     yyparse();
-    // printf("\n\n");
+
 	// printf("\t\t\t\t\t\t\t\t PHASE 1: LEXICAL ANALYSIS \n\n");
 	// printf("\nSYMBOL   DATATYPE   TYPE   LINE NUMBER \n");
 	// printf("_______________________________________\n\n");
@@ -528,10 +529,7 @@ int main(int argc, char *argv[]){
 	// 	free(symbol_table[i].name);
 	// 	free(symbol_table[i].type);
 	// }
-    FILE *fptr = fopen("syntaxtree.txt", "w"); 
-    print_ast_PreOrder(head,fptr);
     fclose(fptr);
-    // printf("\n\n");
     printf("\n");
     for(int i=0;i<sem_errors;i++){
         printf("%s",errors[i]);
