@@ -336,6 +336,7 @@ condition: expression RELATIONAL_OPERATOR expression {
         | variable {$$.nd = new_ast_node($1.name, NULL,NULL); }
         | NOT variable {$$.nd = new_ast_node("NOT", $2.nd,NULL);}
         | '(' condition ')' { $$.nd = new_ast_node("condition", $2.nd, NULL); }
+        | NOT condition {$$.nd = new_ast_node("NOT", $2.nd,NULL);} 
         | expression EQ expression { $$.nd = new_ast_node($2.name, $1.nd, $3.nd); }
         | condition BOOLEAN_OPERATOR condition { $$.nd = new_ast_node($2.name, $1.nd, $3.nd); }
         ;
