@@ -70,6 +70,7 @@ int main() {
 
             }
         }
+    
         if((pos = strstr(line, "begin")) != NULL){
                     printf("Found begin\n");
                     strcpy(final, "");
@@ -81,10 +82,50 @@ int main() {
             strncpy(pos, "= ", 2);
 
         if((pos = strstr(line, "write")) != NULL){
-            strncpy(pos, "printf", 5);
-            strncpy(final, "bool ", 4);
-            // printf("Found write\n");
+            printf(" initial ---> ");
+            printf(line);
             
+            int len = strlen(line);
+            for(int j=len-2;j>=0;j--){
+                line[j+1] = line[j];
+            }
+            strncpy(pos, "printf", 6);
+
+            int comma = 0; //keep count of ','
+            if(pos[7] != '"'){
+                for(int i=0;pos[i]!= ')';i++){
+                    if(pos[i] == ','){
+                        comma++;
+                    }
+                }
+                //extra characters '"",' and then '%d ' comma+1 times
+                //total (comma+2)*3
+                int push = (comma+1)*3 + 3;
+                len = strlen(line);
+                for(int j = len;j>=0;j--){
+                    line[j+push] = line[j];
+                }
+                pos[7] = '"';
+                int temppos = 8;
+
+                while(comma-- > -1){
+                    pos[temppos++] = '*';
+                    pos[temppos++] = 'd';
+                    pos[temppos++] = ' ';
+                }
+                pos[temppos++] = '"';
+                pos[temppos]   = ',';
+            }
+            
+
+            strncpy(final, "bool ", 4);
+
+            printf(" modified ---> ");
+            printf(line);
+            strcpy(final,line);
+            printf("<--");
+//printf("%d %d %d ",number,D,KLNSDKJKL) ;
+
         }
 
         if((pos = strstr(line, "read(")) != NULL)

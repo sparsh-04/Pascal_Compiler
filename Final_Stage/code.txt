@@ -4,7 +4,10 @@ vaR
   skan,asf,as : real;
   asg,greg,hjer :   boolean
 begin
-  write("Enter a number:");
+
+  write("Entervsdvber:");
+  write("Enter a numdsvsdvber:");
+  write(number, k , KLNSDJk);
   read(number);
   b := 20;
   for a := 10 to 20 do
