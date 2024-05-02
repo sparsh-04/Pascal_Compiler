@@ -361,19 +361,8 @@ condition: expression RELATIONAL_OPERATOR expression {
             }
         }
         | '(' condition ')' { $$.nd = new_ast_node("condition", $2.nd, NULL); }
-        | expression EQ expression { $$.nd = new_ast_node($2.name, $1.nd, $3.nd);
-        if(is_while){
-            sprintf(icg[ic_idx++], "if NOT (%s %s %s) GOTO L%d\n", $1.name,$2.name,$3.name,label+1);
-            sprintf($$.if_body , "L%d", label++);
-            sprintf($$.else_body , "L%d", label++);
-            is_while = 0;
-        }
-        else{
-            sprintf(icg[ic_idx++], "if (%s %s %s) GOTO L%d else GOTO L%d\n", $1.name,$2.name,$3.name, label, label+1);
-            sprintf($$.if_body , "L%d", label++);
-            sprintf($$.else_body , "L%d", label++);
-        }
-        }
+        | NOT condition {$$.nd = new_ast_node("NOT", $2.nd,NULL);} 
+        | expression EQ expression { $$.nd = new_ast_node($2.name, $1.nd, $3.nd); }
         | condition BOOLEAN_OPERATOR condition { $$.nd = new_ast_node($2.name, $1.nd, $3.nd); }
         ;
 

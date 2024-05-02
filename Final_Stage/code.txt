@@ -1,0 +1,21 @@
+program NumberOfDigits;
+vaR
+  nUmber, count, a , b: Integer;
+  skan,asf,as : real;
+  asg,greg,hjer :   boolean
+begin
+  if a < 10 then
+  begin
+  count := 1;
+  count:=2;
+  end
+  else
+  begin
+  count:= 3;
+  end;
+
+
+end.
+
+
+
