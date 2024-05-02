@@ -89,8 +89,48 @@ int main() {
 
         if((pos = strstr(line, "read(")) != NULL)
             strncpy(pos, "scanf ", 6);
+       if((pos=strstr(line,"else"))!=NULL){
+                if((pos = strstr(line,"if"))!=NULL){
+            line[pos-line+2]='(';
+            if((pos=strstr(line,"then"))!=NULL){
+                line[pos-line-1]=')';
+                for(int i=0;i<=3;i++)
+                line[pos-line+i]='\0';
+            }
+            
+            int i=0;
+            while(line[i]!='\0')i++;
+            line[i+1]='{';
+            strncpy(final,line,i+1);
+           
+        }
+        else {strncpy(final,line,sizeof(line));}
+            }
+        if((pos = strstr(line,"if"))!=NULL){
+            line[pos-line+2]='(';
+            if((pos=strstr(line,"then"))!=NULL){
+                line[pos-line-1]=')';
+                for(int i=0;i<=3;i++)
+                line[pos-line+i]='\0';
+            }
+            
+            int i=0;
+            while(line[i]!='\0')i++;
+            
+            strncpy(final,line,i);
+           
+        }
+        if((pos=strstr(line,"while"))!=NULL){
+        line[pos-line+5]='(';
+        if((pos=strstr(line,"do"))!=NULL){
+             line[pos-line-1]=')';
+                for(int i=0;i<=1;i++)
+                line[pos-line+i]='\0';
 
-
+        }int j=0;
+        while(line[j]!='\0')j++;
+            strncpy(final,line,j);
+        }
         fputs(final, cFile);
         fputs("\n", cFile);
         strcpy(final, "");

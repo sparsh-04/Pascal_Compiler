@@ -1,0 +1,25 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+int main(){
+int   number, count, a , b;
+float   skan,asf,as ;
+bool  asg,greg,hjer ;
+
+  if(a < 10)
+
+
+
+
+  else
+
+
+
+
+
+
+
+
+
+

@@ -4,11 +4,18 @@ vaR
   skan,asf,as : real;
   asg,greg,hjer :   boolean
 begin
-  write("Enter a number:");
-  read(number);
-  b := 20;
-  for a := 10 to 20 do
+  if a < 10 then
   begin
-    count := 1;
+  count := 1;
+  count:=2;
+  end
+  else
+  begin
+  count:= 3;
   end;
+
+
 end.
+
+
+
