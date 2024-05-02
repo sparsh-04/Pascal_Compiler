@@ -45,7 +45,8 @@ Number [0-9]+
 printStatement \".*\"
 chara ['].[']
 digit [0-9]
-float {digit}+\.{digit}*
+BOOL 0|1
+float {digit}+\.{digit}+
 %%
 
 {keywords} {
@@ -147,8 +148,9 @@ float {digit}+\.{digit}*
    addToken(yytext, "Punctuator");
   return PrintStatement;
 }
-float {
+{float} {
     addToken(yytext, "Float Number");
+    // printf("Float Number %s\n",yytext);
     strcpy(yylval.node_obj.name,(yytext));
     return REAL_NUM;
 
@@ -278,6 +280,7 @@ float {
     strcpy(yylval.node_obj.name,(yytext));
     return ID;
 }
+
 {Number} {
     addToken(yytext, "Number");
     strcpy(yylval.node_obj.name,(yytext));

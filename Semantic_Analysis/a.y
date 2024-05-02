@@ -22,13 +22,10 @@ struct symbol_table {
 
 } symbol_table[100];
 
-char* storeVar[100];
-// memset(storeVar, '\0', sizeof(storeVar));
 int storeVarIndex = 0;
 int search(char *type) { 
     int i; 
     for(i=count-1; i>=0; i--) {
-        // printf("%s   %s]\n",symbol_table[i].name, type);
         if(strcmp(symbol_table[i].name, type)==0) {   
             return -1;
             break;  
@@ -38,18 +35,32 @@ int search(char *type) {
 }
 char type[10];
 void insert_type() {
-    printf("A%sAAA",yytext);
     strcpy(type, yytext);
+    printf("AAAA %s",type);
+    if(type[0]=='b')
+    strcpy(type,"integer\0");
+
     update_type();
 }
 void update_type() {
         for(int j=0; j<count; j++) {
-            if((strcmp(symbol_table[j].type,"Variable")==0) && symbol_table[j].data_type==NULL) {
-            printf("%sV\n\n\n",symbol_table[j].data_type);
+            if((symbol_table[j].type[0]=='V') && symbol_table[j].data_type[0]=='N') {
+            // printf("%d %s %sV\n\n",strcmp(symbol_table[j].data_type,"NULL"),symbol_table[j].type,symbol_table[j].data_type);
                 symbol_table[j].data_type = strdup(type);
             }
         
     }
+}
+int findVar(char* name){
+    for(int j=0; j<count; j++) {
+            if((strcmp(symbol_table[j].name,name)==0)) {
+            // printf("%sV\n\n",symbol_table[j].data_type);
+                return j;
+            }
+        
+    }
+    
+    // return -1;
 }
 
 void add_symbol(char *name, char *type) {
@@ -71,7 +82,13 @@ int symbol_exists(char *name) {
     return 0;
 }
 int symbol_initialized(char *name) {
-    q = search(name);   
+    for(int i=0;i<count;i++){
+        if(strcmp(symbol_table[i].name,name)==0){
+            if(symbol_table[i].initialized>0){
+                return 1;
+            }
+        }
+    }  
     // printf("F%dF ",q); 
     if(!q) {        
         sprintf(errors[sem_errors], "Line %d: Variable \"%s\" not initialized before usage!\n", lineNum+1, name);  
@@ -80,9 +97,7 @@ int symbol_initialized(char *name) {
     return 0;
 }
 char *get_type(char *var) { 
-    printf("A%sAAA",var);
     for(int i=0; i<count; i++) {  
-            printf("A%sAAA",symbol_table[i].data_type);
         if(!strcmp(symbol_table[i].name, var)) {   
             return symbol_table[i].data_type;  
         }
@@ -101,18 +116,17 @@ void initialize_symbol(char *name) {
 int same_type(char *name1, char *name2,char *type1,char *type2) {
 
     if(!strcmp(type2, "null")) {
-sprintf(errors[sem_errors], "Line %d: Variable name \"%s\" has not the same type!\n", lineNum+1, name2);
+    sprintf(errors[sem_errors], "Line %d: Variable name \"%s\" has not the same type!\n", lineNum+1, name2);
         sem_errors++;
         return -1; 
     }
    
-    printf("FFFF%s %s %s %s\n",name1,name2,type1,type2);
-    if(strcmp(type1, type2)==0) 
+    if(type1[0]==type2[0])
     return 1;
     else{
-        sprintf(errors[sem_errors], "Line %d: Variable name \"%s\" and \"%s\" has not the same type!\n", lineNum+1, name1,name1);
+        sprintf(errors[sem_errors], "Line %d: Variable name \"%s\" and \"%s\" has not the same type!\n", lineNum+1, name1,name2);
         sem_errors++;
-return 0;
+    return 0;
     } 
 
 
@@ -140,7 +154,6 @@ void print_ast_PreOrder(struct ast_node *node) {
     if (node == NULL) {
         return;
     }
-    // if(node->node_type[0]!='\0')
     printf("[");
     printf("%s", node->node_type);
     print_ast_PreOrder(node->left);
@@ -161,6 +174,7 @@ void print_ast_InOrder(struct ast_node *node) {
 
 
 }
+char * storeVar[100];
 
 %}
 %left BOOLEAN_OPERATOR
@@ -180,9 +194,9 @@ void print_ast_InOrder(struct ast_node *node) {
 		} nd_obj2; 
 } 
 
-%token <node_obj> PROGRAM INTEGER REAL BOOLEAN CHAR VAR TO DOWNTO IF THEN ELSE WHILE FOR DO ARRAY AND OR NOT BEGINI END READ WRITE ID PUNCTUATOR BOOLEAN_OPERATOR OF DOT NUMBER CHARACTER REAL_NUM PrintStatement OpenB CloseB AssignOp STRING FLOAT_NUM  LE GE LESS GR NE EQ PLUS MINUS MUL DIV MOD
-%type <node_obj> program declaration statements statement assignment_statement if_statement while_statement for_statement read_statement write_statement condition Type var_lists RELATIONAL_OPERATOR else_statement inc_or_dec assignment_statement_loop print_or_var ARITHMETIC_OPERATOR
-%type <nd_obj2> value expression variable var_list
+%token <node_obj> PROGRAM INTEGER REAL BOOLEAN CHAR VAR TO DOWNTO IF THEN ELSE WHILE FOR DO ARRAY AND OR NOT BEGINI END READ WRITE ID PUNCTUATOR BOOLEAN_OPERATOR OF DOT NUMBER boolean CHARACTER REAL_NUM PrintStatement OpenB CloseB AssignOp STRING FLOAT_NUM  LE GE LESS GR NE EQ PLUS MINUS MUL DIV MOD
+%type <node_obj> program declaration statements statement assignment_statement if_statement while_statement for_statement read_statement write_statement Type var_lists RELATIONAL_OPERATOR else_statement inc_or_dec assignment_statement_loop print_or_var ARITHMETIC_OPERATOR
+%type <nd_obj2> value expression variable var_list condition var_list_for_print
 
 %%
 
@@ -203,10 +217,8 @@ declaration: VAR { add('K',$1.name); } var_lists {
 };
 
 
-var_lists :var_list ':' Type {printf("%s\n\n",$1.type);
-                
-                // memset(storeVar, '\0', sizeof(storeVar));
-                // storeVarIndex = 0;
+var_lists :var_list ':' Type {
+                storeVarIndex = 0;
                 } ';' var_lists {
     
 
@@ -217,24 +229,31 @@ var_lists :var_list ':' Type {printf("%s\n\n",$1.type);
                 |  {$$.nd = NULL;}
                 ;
 
-var_list: variable { strcpy($1.type,type);} ',' var_list  { 
+var_list: variable {add('V',$1.name) ; strcpy($1.type,type);} ',' var_list  { 
                     $$.nd = new_ast_node($1.name, $4.nd,NULL);
                     // strcpy($1.type,$$.type);
-                    // storeVar[storeVarIndex] = $1.type;
+                    storeVar[storeVarIndex] = strdup($1.name);
+
                     storeVarIndex++;
-                    
-                    printf("%s-\n",type);
+
                     strcpy($4.type,type);}
         | variable { 
             add('V',$1.name) ;
             $$.nd = new_ast_node($1.name, NULL, NULL);
             storeVar[storeVarIndex] = strdup($1.name);
             storeVarIndex++;
+
             strcpy($1.type,type);
-            printf("%s-\n",type);
          }
         ;
-
+var_list_for_print: variable { strcpy($1.type,type);} ',' var_list_for_print  { 
+                    $$.nd = new_ast_node($1.name, $4.nd,NULL);
+                    strcpy($4.type,type);}
+        | variable { 
+            $$.nd = new_ast_node($1.name, NULL, NULL);
+            strcpy($1.type,type);
+         }
+        ;
    
 statements: statements statement { 
     if($1.nd == NULL){
@@ -256,29 +275,21 @@ statement: assignment_statement { $$.nd = new_ast_node("assignment_statement", $
 
 assignment_statement: variable AssignOp expression ';' { 
     $$.nd = new_ast_node($2.name, $1.nd, $3.nd);
-    // type = "integer";
-    strcpy(type,"NULL");
-    for(int i=0;i<count;i++){
-        if(strcmp(symbol_table[i].name,$1.name)==0){
-            strcpy(type,symbol_table[i].data_type);
-        }
-    }
-    if(type==NULL){
-        sprintf(errors[sem_errors], "Line %d: Variable \"%s\" not declared before usage!\n", lineNum+1, $1.name);  
-        sem_errors++;
-    }
-    int t = same_type($1.name,$3.name,type, $3.type);
 
     symbol_exists($1.name);
+    int k = findVar($1.name);
+    int t = same_type($1.name,$3.name,symbol_table[k].data_type, $3.type);
+
     initialize_symbol($1.name);
  
 };
 
 assignment_statement_loop: variable AssignOp expression {
     $$.nd = new_ast_node($2.name, $1.nd, $3.nd);
-  int t = same_type($1.name,$3.name,$1.type, $3.type);
-  symbol_exists($1.name);
-  initialize_symbol($1.name);
+    symbol_exists($1.name);
+    int k = findVar($1.name);
+    int t = same_type($1.name,$3.name,symbol_table[k].data_type, $3.type);
+    initialize_symbol($1.name);
 }
 
 if_statement: IF {add('K',$1.name);} condition THEN BEGINI statements END else_statement ';'{
@@ -286,6 +297,7 @@ if_statement: IF {add('K',$1.name);} condition THEN BEGINI statements END else_s
    $5.nd = new_ast_node("begin", $6.nd, NULL);
    $4.nd = new_ast_node("then", $5.nd, $7.nd);
    $1.nd = new_ast_node("if", $3.nd, $4.nd);
+   
     $$.nd = new_ast_node("if_statement_with_else", $1.nd, $8.nd);
 
 
@@ -306,7 +318,7 @@ else_statement: ELSE {add('K',$1.name);} BEGINI statements END {
 |
 ;
 
-while_statement: WHILE {add('K',$1.name);} condition DO BEGINI {printf("heyy");} statements END ';' {
+while_statement: WHILE {add('K',$1.name);} condition DO BEGINI {} statements END ';' {
     $8.nd = new_ast_node("end", NULL, NULL);
     $5.nd = new_ast_node("begin", $7.nd, NULL);
    $4.nd = new_ast_node("do", $5.nd, $8.nd);
@@ -335,6 +347,8 @@ inc_or_dec: TO expression DO BEGINI statements END {
 
 read_statement: READ {add('K',$1.name);} '(' variable ')' ';' {
     $$.nd = new_ast_node("read", $4.nd, NULL);
+    symbol_exists($4.name);
+    initialize_symbol($4.name);
 };
 
 write_statement: WRITE {add('K',$1.name);} print_or_var ';'  { 
@@ -346,18 +360,43 @@ print_or_var: '(' PrintStatement ')' {
     // $$.nd = new_ast_node("PrintStatement", NULL, NULL)
 };
 
-| '(' var_list ')'  {
+| '(' var_list_for_print ')'  {
     $$.nd = new_ast_node($2.name, NULL, NULL); 
     // $$.nd = new_ast_node("write", NULL, NULL)
 };
 
 condition: expression RELATIONAL_OPERATOR expression { $$.nd = new_ast_node($2.name, $1.nd, $3.nd); 
+                    if($1.type[0]!=$3.type[0]) {  
+                                    sprintf(errors[sem_errors], "Line %d: Variable name \"%s\" and \"%s\" are of different types!\n", lineNum+1,$1.name,$3.name );
+                                    sem_errors++;
+                    }
 }
-        | variable {$$.nd = new_ast_node($1.name, NULL,NULL); }
-        | NOT variable {$$.nd = new_ast_node("NOT", $2.nd,NULL);}
+        | variable {$$.nd = new_ast_node($1.name, NULL,NULL); 
+                    symbol_exists($1.name);
+                    symbol_initialized($1.name);
+                    int k = findVar($1.name);
+                    int t = same_type($1.name,"integer",symbol_table[k].data_type, "integer");}
+
+        | NOT variable {$$.nd = new_ast_node("NOT", $2.nd,NULL);
+                    symbol_exists($2.name);
+                    symbol_initialized($2.name);
+                    int k = findVar($2.name);
+                    int t = same_type($2.name,"integer",symbol_table[k].data_type, "integer");}
+
         | '(' condition ')' { $$.nd = new_ast_node("condition", $2.nd, NULL); }
-        | expression EQ expression { $$.nd = new_ast_node($2.name, $1.nd, $3.nd); }
-        | condition BOOLEAN_OPERATOR condition { $$.nd = new_ast_node($2.name, $1.nd, $3.nd); }
+        | expression EQ expression { $$.nd = new_ast_node($2.name, $1.nd, $3.nd); 
+                                    if(!strcmp($1.type, $3.type)) {  
+                                    sprintf(errors[sem_errors], "Line %d: Variable name \"%s\" and \"%s\" are of different types!\n", lineNum+1,$1.name,$3.name );
+				                    sem_errors++;
+                    }
+                    
+        }
+        | condition BOOLEAN_OPERATOR condition { $$.nd = new_ast_node($2.name, $1.nd, $3.nd);
+                            if(!strcmp($1.type, $3.type)) {  
+                                    sprintf(errors[sem_errors], "Line %d: Variable name \"%s\" and \"%s\" are of different types!\n", lineNum+1,$1.name,$3.name);
+				                    sem_errors++; 
+                                    }
+        }
         ;
 
 RELATIONAL_OPERATOR: LE
@@ -367,8 +406,11 @@ RELATIONAL_OPERATOR: LE
                     | NE 
                     ;
 
-expression: expression ARITHMETIC_OPERATOR expression { $$.nd = new_ast_node($2.name, $1.nd, $3.nd); 
-            if(!strcmp($1.type, $3.type)) {  
+expression: expression ARITHMETIC_OPERATOR expression { $$.nd = new_ast_node($2.name, $1.nd, $3.nd);
+            if($1.type[0] != $3.type[0]) {  
+                                    sprintf(errors[sem_errors], "Line %d: Variable name \"%s\" and \"%s\" are if different types!\n", lineNum+1,$1.name,$3.name);
+                                    sem_errors++; 
+                                    
                 sprintf($$.type, $1.type);  
 
             } 
@@ -378,22 +420,18 @@ expression: expression ARITHMETIC_OPERATOR expression { $$.nd = new_ast_node($2.
 
                 }  
           | variable { $$.nd = new_ast_node($1.name, NULL, NULL);
-            strcpy($$.name, $1.name); 
-            sprintf($$.type, $1.type); 
+            symbol_exists($1.name);
+            symbol_initialized($1.name);
+            int k = findVar($1.name);
+            sprintf($$.type, symbol_table[k].data_type);
              }
           | value {add('C',$1.name);} { $$.nd = new_ast_node($1.name, NULL, NULL);
             strcpy($$.name, $1.name); 
-
-        //   printf("AAA%s %s\n", $1.name,$1.type);
             sprintf($$.type, $1.type); 
-        //   strcpy($1.nd->node_type, "C");
-          
-        //   sprintf($$.nd->node_type, $1.nd->node_type);  
            }
           |MINUS value {add('C',$2.name);} { $$.nd = new_ast_node($1.name, $2.nd, NULL); $2.nd = new_ast_node($2.name, NULL, NULL); 
-          strcpy($$.name, $2.name); 
+            strcpy($$.name, $2.name); 
             sprintf($$.type, $2.type); 
-
             }
           | PLUS value {add('C',$2.name);} { $$.nd = new_ast_node($1.name, $2.nd, NULL); $2.nd = new_ast_node($2.name, NULL, NULL); 
                 strcpy($$.name, $2.name); 
@@ -409,9 +447,12 @@ ARITHMETIC_OPERATOR : PLUS
 value:  NUMBER { strcpy($$.name, $1.name); sprintf($$.type, "integer"); add('C',$1.name); $$.nd = new_ast_node( $1.name,NULL, NULL); strcpy($$.name, $1.name); }
         | REAL_NUM { strcpy($$.name, $1.name); sprintf($$.type, "real"); add('C',$1.name); $$.nd = new_ast_node( $1.name,NULL, NULL);strcpy($$.name, $1.name); }
         | CHARACTER { strcpy($$.name, $1.name); sprintf($$.type, "char"); add('C',$1.name); $$.nd = new_ast_node( $1.name,NULL, NULL);strcpy($$.name, $1.name); }
-        | variable{ strcpy($$.name, $1.name); char *id_type = get_type($1.name); sprintf($$.type, id_type); symbol_initialized($1.name); $$.nd = new_ast_node( $1.name,NULL, NULL);strcpy($$.name, $1.name); }
+        | variable{ strcpy($$.name, $1.name); char *id_type = get_type($1.name); sprintf($$.type, id_type);symbol_initialized($1.name); $$.nd = new_ast_node( $1.name,NULL, NULL);strcpy($$.name, $1.name); }
+        | boolean { strcpy($$.name, $1.name); sprintf($$.type, "integer"); add('C',$1.name); $$.nd = new_ast_node( $1.name,NULL, NULL); strcpy($$.name, $1.name); }
 
-variable: ID '[' expression']' { $$.nd = new_ast_node("array", $1.nd, $3.nd); $1.nd = new_ast_node($1.name, NULL, NULL); }
+variable: ID '[' expression']' {$1.nd = new_ast_node($1.name, NULL, NULL); $$.nd = new_ast_node($1.name, $1.nd, $3.nd);  
+
+            }
         | ID  {//add('V',$1.name); 
          $$.nd = new_ast_node($1.name, NULL, NULL); }
         ;
@@ -421,7 +462,21 @@ Type:
     | REAL {insert_type(); $$.nd = new_ast_node($1.name, NULL, NULL);}
     | CHAR {insert_type(); $$.nd = new_ast_node($1.name, NULL, NULL);}
     | BOOLEAN {insert_type(); $$.nd = new_ast_node($1.name, NULL, NULL);}
-    | ARRAY '[' NUMBER '.' '.' NUMBER ']' OF Type {insert_type(); $$.nd = new_ast_node($1.name, $9.nd, NULL);}
+    | ARRAY {} '[' NUMBER '.' '.' NUMBER ']' OF Type {
+        insert_type();
+        for(int i=atoi($4.name); i<=atoi($7.name); i++) {
+                char * t1 = malloc(256); 
+                strcpy(t1, storeVar[0]); // Copy the string from storeVar[0] to t1
+                char t2[256]; 
+                sprintf(t2, "[%d]", i);
+                strcat(t1, t2);
+                // printf("%s",t1);
+                add('V',t1);
+                free(t1); 
+        }
+        insert_type();
+        $$.nd = new_ast_node($10.name, $10.nd, NULL);
+        }
     ;
 %%
 
@@ -465,8 +520,8 @@ int main(int argc, char *argv[]){
 
 void add(char c,char *name) {
     if(c == 'V'){
-		for(int i=0; i<10; i++){
-			if(!strcmp(reserved[i], strdup(yytext))){
+		for(int i=0; i<20; i++){
+			if(!strcmp(reserved[i], strdup(name))){
         		sprintf(errors[sem_errors], "Line %d: Variable name \"%s\" is a reserved keyword!\n", lineNum+1, name);
 				sem_errors++;
 				return;
@@ -493,11 +548,11 @@ void add(char c,char *name) {
 			count++;
 		}
 		else if(c == 'V') {
-            // printf(" %s %d ",name,lineNum);
+            printf(" %s %d ",name,lineNum);
 			symbol_table[count].name=strdup(name);
-			symbol_table[count].data_type=NULL;
-			symbol_table[count].initialized=lineNum;
-			symbol_table[count].type=strdup("Variable");
+			symbol_table[count].data_type="NULL";
+			symbol_table[count].initialized=0;
+			symbol_table[count].type=strdup("Variable\0");
             // symbol_exists(name);
 			count++;
 		}
@@ -510,7 +565,6 @@ void add(char c,char *name) {
 		}
 	}
      else if(c == 'V' && q) {
-        // printf("%s-%d-%d",name, lineNum,q);
         sprintf(errors[sem_errors], "Line %d: Multiple declarations of \"%s\" not allowed!\n", lineNum+1, name);
 		sem_errors++;
     }
