@@ -36,7 +36,6 @@ int search(char *type) {
 char type[10];
 void insert_type() {
     strcpy(type, yytext);
-    printf("AAAA %s",type);
     if(type[0]=='b')
     strcpy(type,"integer\0");
 
@@ -150,21 +149,23 @@ struct ast_node *new_ast_node(char *node_type, struct ast_node *left, struct ast
 
 char reserved[24][20] = {"program","integer","real","char","var","to","downto","if","then","else","while","for","do","array","and","or","not","begin","end","read","write","writeln"};
 
-void print_ast_PreOrder(struct ast_node *node) {
+void print_ast_PreOrder(struct ast_node *node, FILE *fptr) {
     if (node == NULL) {
         return;
     }
-    printf("[");
-    printf("%s", node->node_type);
-    print_ast_PreOrder(node->left);
-    print_ast_PreOrder(node->right);
-    printf("]");
-    }
+    
+    fprintf(fptr, "[");
+    fprintf(fptr, "%s", node->node_type);
+    print_ast_PreOrder(node->left, fptr);
+    print_ast_PreOrder(node->right, fptr);
+    fprintf(fptr, "]");
+}
 void print_ast_InOrder(struct ast_node *node) {
     if (node == NULL) {
         // printf("    q ");
         return;
     }
+    
     printf("[");
     print_ast_InOrder(node->left);
     if(node->node_type[0]!='\0')
@@ -357,12 +358,12 @@ write_statement: WRITE {add('K',$1.name);} print_or_var ';'  {
 
 print_or_var: '(' PrintStatement ')' {
     $$.nd = new_ast_node($2.name, NULL, NULL); 
-    // $$.nd = new_ast_node("PrintStatement", NULL, NULL)
+
 };
 
 | '(' var_list_for_print ')'  {
     $$.nd = new_ast_node($2.name, NULL, NULL); 
-    // $$.nd = new_ast_node("write", NULL, NULL)
+
 };
 
 condition: expression RELATIONAL_OPERATOR expression { $$.nd = new_ast_node($2.name, $1.nd, $3.nd); 
@@ -408,24 +409,35 @@ RELATIONAL_OPERATOR: LE
 
 expression: expression ARITHMETIC_OPERATOR expression { $$.nd = new_ast_node($2.name, $1.nd, $3.nd);
             if($1.type[0] != $3.type[0]) {  
-                                    sprintf(errors[sem_errors], "Line %d: Variable name \"%s\" and \"%s\" are if different types!\n", lineNum+1,$1.name,$3.name);
+                                    sprintf(errors[sem_errors], "Line %d: Variable name \"%s\" and \"%s\" are of different types!\n", lineNum+1,$1.name,$3.name);
                                     sem_errors++; 
                                     
                 sprintf($$.type, $1.type);  
 
             } 
         }
-          | '(' expression ')' { $$.nd = new_ast_node("expression", $2.nd, NULL); 
+          | expression RELATIONAL_OPERATOR expression { $$.nd = new_ast_node($2.name, $1.nd, $3.nd);
+            if($1.type[0] != $3.type[0]) {  
+                                    sprintf(errors[sem_errors], "Line %d: Variable name \"%s\" and \"%s\" are of different types!\n", lineNum+1,$1.name,$3.name);
+                                    sem_errors++; 
+                                    
+                sprintf($$.type, $1.type);  
+
+            }
+        } 
+            | '(' expression ')' { $$.nd = new_ast_node("expression", $2.nd, NULL); 
                     sprintf($$.type, $2.type);  
 
                 }  
           | variable { $$.nd = new_ast_node($1.name, NULL, NULL);
             symbol_exists($1.name);
+            // printf("JBKHBH %s ",$1.name);
             symbol_initialized($1.name);
             int k = findVar($1.name);
             sprintf($$.type, symbol_table[k].data_type);
              }
-          | value {add('C',$1.name);} { $$.nd = new_ast_node($1.name, NULL, NULL);
+          | value {add('C',$1.name);} { 
+            $$.nd = new_ast_node($1.name, NULL, NULL);
             strcpy($$.name, $1.name); 
             sprintf($$.type, $1.type); 
            }
@@ -447,7 +459,14 @@ ARITHMETIC_OPERATOR : PLUS
 value:  NUMBER { strcpy($$.name, $1.name); sprintf($$.type, "integer"); add('C',$1.name); $$.nd = new_ast_node( $1.name,NULL, NULL); strcpy($$.name, $1.name); }
         | REAL_NUM { strcpy($$.name, $1.name); sprintf($$.type, "real"); add('C',$1.name); $$.nd = new_ast_node( $1.name,NULL, NULL);strcpy($$.name, $1.name); }
         | CHARACTER { strcpy($$.name, $1.name); sprintf($$.type, "char"); add('C',$1.name); $$.nd = new_ast_node( $1.name,NULL, NULL);strcpy($$.name, $1.name); }
-        | variable{ strcpy($$.name, $1.name); char *id_type = get_type($1.name); sprintf($$.type, id_type);symbol_initialized($1.name); $$.nd = new_ast_node( $1.name,NULL, NULL);strcpy($$.name, $1.name); }
+        | variable{ 
+            strcpy($$.name, $1.name); 
+            char *id_type = get_type($1.name); 
+            sprintf($$.type, id_type);
+            symbol_exists($1.name);
+            symbol_initialized($1.name); 
+            $$.nd = new_ast_node( $1.name,NULL, NULL);
+            strcpy($$.name, $1.name); }
         | boolean { strcpy($$.name, $1.name); sprintf($$.type, "integer"); add('C',$1.name); $$.nd = new_ast_node( $1.name,NULL, NULL); strcpy($$.name, $1.name); }
 
 variable: ID '[' expression']' {$1.nd = new_ast_node($1.name, NULL, NULL); $$.nd = new_ast_node($1.name, $1.nd, $3.nd);  
@@ -464,15 +483,18 @@ Type:
     | BOOLEAN {insert_type(); $$.nd = new_ast_node($1.name, NULL, NULL);}
     | ARRAY {} '[' NUMBER '.' '.' NUMBER ']' OF Type {
         insert_type();
-        for(int i=atoi($4.name); i<=atoi($7.name); i++) {
-                char * t1 = malloc(256); 
-                strcpy(t1, storeVar[0]); // Copy the string from storeVar[0] to t1
-                char t2[256]; 
-                sprintf(t2, "[%d]", i);
-                strcat(t1, t2);
-                // printf("%s",t1);
-                add('V',t1);
-                free(t1); 
+        for(int j=0;j<storeVarIndex;j++){
+            // printf("%s %d ",storeVar[j],j);
+            for(int i=atoi($4.name); i<=atoi($7.name); i++) {
+                    char * t1 = malloc(256); 
+                    strcpy(t1, storeVar[j]); // Copy the string from storeVar[0] to t1
+                    char t2[256]; 
+                    sprintf(t2, "[%d]", i);
+                    strcat(t1, t2);
+                    // printf("%s",t1);
+                    add('V',t1);
+                    free(t1); 
+            }
         }
         insert_type();
         $$.nd = new_ast_node($10.name, $10.nd, NULL);
@@ -494,22 +516,22 @@ int main(int argc, char *argv[]){
     extern FILE *yyin;
     yyin=fopen(filename, "r+");
     yyparse();
-    printf("\n\n");
-	printf("\t\t\t\t\t\t\t\t PHASE 1: LEXICAL ANALYSIS \n\n");
-	printf("\nSYMBOL   DATATYPE   TYPE   LINE NUMBER \n");
-	printf("_______________________________________\n\n");
-	int i=0;
-	for(i=0; i<count; i++) {
-		printf("%s\t%s\t%s\t\t\n", symbol_table[i].name, symbol_table[i].data_type, symbol_table[i].type);
-	}
-	for(i=0;i<count;i++) {
-		free(symbol_table[i].name);
-		free(symbol_table[i].type);
-	}
-	printf("\n\n");
-    printf("\n");
-    print_ast_PreOrder(head);
-    printf("\n\n");
+    // printf("\n\n");
+	// printf("\t\t\t\t\t\t\t\t PHASE 1: LEXICAL ANALYSIS \n\n");
+	// printf("\nSYMBOL   DATATYPE   TYPE   LINE NUMBER \n");
+	// printf("_______________________________________\n\n");
+	// int i=0;
+	// for(i=0; i<count; i++) {
+	// 	printf("%s\t%s\t%s\t\t\n", symbol_table[i].name, symbol_table[i].data_type, symbol_table[i].type);
+	// }
+	// for(i=0;i<count;i++) {
+	// 	free(symbol_table[i].name);
+	// 	free(symbol_table[i].type);
+	// }
+    FILE *fptr = fopen("syntaxtree.txt", "w"); 
+    print_ast_PreOrder(head,fptr);
+    fclose(fptr);
+    // printf("\n\n");
     printf("\n");
     for(int i=0;i<sem_errors;i++){
         printf("%s",errors[i]);
@@ -548,7 +570,7 @@ void add(char c,char *name) {
 			count++;
 		}
 		else if(c == 'V') {
-            printf(" %s %d ",name,lineNum);
+            // printf(" %s %d ",name,lineNum);
 			symbol_table[count].name=strdup(name);
 			symbol_table[count].data_type="NULL";
 			symbol_table[count].initialized=0;
