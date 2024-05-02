@@ -1,0 +1,17 @@
+program NumberOfDigits;
+var
+  number, count, a , b: Integer;
+begin
+  write("Enter a number:");
+  read(number);
+  b := 20;
+  for a := 10 to 20 do
+  begin
+    if a<20 then
+      begin
+      count := 4;
+      end;
+    count := 1;
+  end;
+  count:=3;
+end.
