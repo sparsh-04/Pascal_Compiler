@@ -177,8 +177,8 @@ program: PROGRAM ID ';' declaration BEGINI {add('K',$5.name);} statements END {a
    $$.nd = new_ast_node("program", $2.nd, $5.nd);
     // $6.nd = new_ast_node("statements", $7.nd, NULL);
     head = $$.nd;
-    printf("valid input");return 0;};
-
+    // printf("valid input");return 0;};
+}
 
 declaration: VAR { add('K',$1.name); } var_lists {
     $1.nd = new_ast_node($1.name, NULL, NULL);
@@ -194,9 +194,14 @@ var_lists :var_list ':' Type ';' var_lists {
     |  {$$.nd = NULL;}
     ;
 
-var_list: variable 
-    {
-        add('V',$1.name); } ',' var_list  { 
+var_list: variable {add('V',$1.name); } ',' var_list  
+    { 
+        char temp2[100];
+        sprintf(temp2 ,"");
+        strcat(temp2, $1.name);
+        strcat(temp2, ",");
+        strcat(temp2, $4.name);
+        sprintf($$.name ,"%s", temp2);
         $$.nd = new_ast_node($1.name, $4.nd,NULL);
     }
     | variable 
@@ -317,7 +322,9 @@ print_or_var: '(' PrintStatement ')' {
 
 | '(' var_list ')'  {
     $$.nd = new_ast_node($2.name, NULL, NULL); 
+    sprintf(icg[ic_idx++], "Write: %s\n", $2.name);
 };
+
 
 condition: expression RELATIONAL_OPERATOR expression { 
     $$.nd = new_ast_node($2.name, $1.nd, $3.nd); 
@@ -363,7 +370,9 @@ condition: expression RELATIONAL_OPERATOR expression {
         | '(' condition ')' { $$.nd = new_ast_node("condition", $2.nd, NULL); }
         | NOT condition {$$.nd = new_ast_node("NOT", $2.nd,NULL);} 
         | expression EQ expression { $$.nd = new_ast_node($2.name, $1.nd, $3.nd); }
-        | condition BOOLEAN_OPERATOR condition { $$.nd = new_ast_node($2.name, $1.nd, $3.nd); }
+        | condition BOOLEAN_OPERATOR condition { 
+            $$.nd = new_ast_node($2.name, $1.nd, $3.nd); 
+            }
         ;
 
 RELATIONAL_OPERATOR: LE
@@ -436,8 +445,17 @@ value:  NUMBER { strcpy($$.name, $1.name); sprintf($$.type, "int"); add('C',$1.n
         | CHARACTER { strcpy($$.name, $1.name); sprintf($$.type, "char"); add('C',$1.name); $$.nd = new_ast_node( $1.name,NULL, NULL);}
         | variable{ strcpy($$.name, $1.name); char *id_type = get_type($1.name); sprintf($$.type, id_type); symbol_initialized($1.name); $$.nd = new_ast_node( $1.name,NULL, NULL);}
 
-variable: ID '[' expression']' { $$.nd = new_ast_node("array", $1.nd, $3.nd); $1.nd = new_ast_node($1.name, NULL, NULL); }
-        | ID {add('V',$1.name);} {printf("JWHN %s",$1.name); $$.nd = new_ast_node($1.name, NULL, NULL); }
+variable: ID '[' expression']'{
+    char temp[100];
+    sprintf(temp ,"");
+    strcat(temp, $1.name);
+    strcat(temp, "[");
+    strcat(temp, $3.name);
+    strcat(temp, "]");
+    sprintf($$.name ,"%s", temp);
+    $$.nd = new_ast_node(temp, $1.nd, $3.nd); $1.nd = new_ast_node($1.name, NULL, NULL); 
+     }
+        | ID {add('V',$1.name);} { $$.nd = new_ast_node($1.name, NULL, NULL); }
         ;
 
 Type:
@@ -464,13 +482,13 @@ int main(int argc, char *argv[]){
     yyin=fopen(filename, "r+");
     yyparse();
     printf("\n\n");
-    printf("\t\t\t\t\t\t\t\t PHASE 1: LEXICAL ANALYSIS \n\n");
-    printf("\nSYMBOL   DATATYPE   TYPE   LINE NUMBER \n");
-    printf("_______________________________________\n\n");
+    printf("\t\t\t\t\t\t PHASE 4: INTERMEDIATE CODE GENERATION \n\n");
+    // printf("\nSYMBOL   DATATYPE   TYPE   LINE NUMBER \n");
+    // printf("_______________________________________\n\n");
     int i=0;
-    for(i=0; i<count; i++) {
-        printf("%s\t%s\t%s\t\t\n", symbol_table[i].name, symbol_table[i].data_type, symbol_table[i].type);
-    }
+    // for(i=0; i<count; i++) {
+    //     printf("%s\t%s\t%s\t\t\n", symbol_table[i].name, symbol_table[i].data_type, symbol_table[i].type);
+    // }
     for(i=0;i<count;i++) {
         free(symbol_table[i].name);
         free(symbol_table[i].type);
@@ -480,8 +498,8 @@ int main(int argc, char *argv[]){
         printf("%s", icg[i]);
     }
     printf("\n\n");
-    printf("3\n");
-    print_ast_PreOrder(head);
+    // printf("3\n");
+    // print_ast_PreOrder(head);
     return 0;
 
 }
