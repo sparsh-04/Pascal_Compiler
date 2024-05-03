@@ -655,23 +655,23 @@ char *y = (char *)line;
     system("rm b.c");
     
     memset(final, 0, sizeof(final));
-
+memset(final, 0, sizeof(final));
     for(int i=0;i<sym_cnt;i++){
 
         if(symbol_table[i]->type[0] == 'I'){
-            sprintf(final, "printf(\"Value of %s is %%d and is of type int %s \",%s);\n",    symbol_table[i]->name,"\n",symbol_table[i]->name);
+            sprintf(final, "printf(\"Value of %s is %%d and is of type int %s \",%s);\n",symbol_table[i]->name,"\\n",symbol_table[i]->name);
             fputs(final, cFile3);
         }
         else if(symbol_table[i]->type[0] == 'B'){
-            sprintf(final, "printf(\"Value of %s is %%d and is of type bool  \",%s);\n",    symbol_table[i]->name,symbol_table[i]->name);
+            sprintf(final, "printf(\"Value of %s is %%d and is of type bool %s \",%s);\n",    symbol_table[i]->name,"\\n",symbol_table[i]->name);
             fputs(final, cFile3);
         }
         else if(symbol_table[i]->type[0] == 'C'){
-            sprintf(final, "printf(\"Value of %s is %%c and is of type char  \",%s);\n",    symbol_table[i]->name,symbol_table[i]->name);
+            sprintf(final, "printf(\"Value of %s is %%c and is of type char %s \",%s);\n",    symbol_table[i]->name,"\\n",symbol_table[i]->name);
             fputs(final, cFile3);
         }
         else if(symbol_table[i]->type[0] == 'F'){
-            sprintf(final, "printf(\"Value of %s is %%f and is of type float  n\",%s);\n",    symbol_table[i]->name,symbol_table[i]->name);
+            sprintf(final, "printf(\"Value of %s is %%f and is of type float  %s \",%s);\n",    symbol_table[i]->name,"\\n",symbol_table[i]->name);
             fputs(final, cFile3);
         }
     }
