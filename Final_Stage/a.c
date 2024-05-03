@@ -400,7 +400,21 @@ int main()
             strcat(pos, " ");
         }
         if((pos = strstr(line, "write")) != NULL){
-            
+            char* xyz=strstr(line,"\"");
+            char pehla[50]={'\0'};
+
+            if(xyz==NULL){
+                char* com=strstr(line,",");
+                char* bra=strstr(line,"(");
+                int x=bra-line;
+                int y=com-line;int i=0;
+                while(x!=y-1){
+                    pehla[i++]=bra[x+1];
+                    x++;
+                }
+                printf("#####%s######",pehla);
+            }
+           
             int len = strlen(line);
             for(int j=len-2;j>=0;j--){
                 line[j+1] = line[j];
@@ -423,7 +437,7 @@ int main()
                 }
                 pos[7] = '"';
                 int temppos = 8;
-
+                
                 while(comma-- > -1){
                     pos[temppos++] = '\%';
                     pos[temppos++] = 'd';
@@ -437,9 +451,39 @@ int main()
 
             strncpy(pos, "printf", 5);
         }
-
-        if((pos = strstr(line, "read(")) != NULL)
-            strncpy(pos, "scanf ", 6);
+        if((pos = strstr(line, "read")) != NULL){
+            char var_temp[50];
+            int cnt = 0;
+            memset(var_temp, 0 , sizeof(var_temp));
+            for(int i = pos-line+5;i<sizeof(line)/sizeof(char);i++){
+                if(line[i]==')'){
+                    break;
+                }else{
+                    var_temp[cnt++] = line[i];
+                }
+            }
+            char typee[50];
+            memset(typee, 0, sizeof(typee));
+            for(int i=0;i<sym_cnt;i++){
+                printf("l%sl l%sl\n",symbol_table[i]->name ,var_temp);
+                if(symbol_table[i]->name == var_temp){
+                    sprintf(typee, symbol_table[i]->type);
+                    break;
+                }
+            }
+            if(typee[0] == 'I'){
+                sprintf(final,"scanf(\"%%d\",\"%s\")",var_temp);
+            }else if(typee[0] == 'F'){
+                sprintf(final,"scanf(\"%%f\",\"%s\")",var_temp);
+            }else if(typee[0] == 'B'){
+                sprintf(final,"scanf(\"%%d\",\"%s\")",var_temp);
+            }else if(typee[0] == 'C'){
+                sprintf(final,"scanf(\"%%c\",\"%s\")",var_temp);
+            }
+            printf("this is final: %s",typee);
+            fputs(final, cFile);
+            
+        }
         if((pos=strstr(line,"else"))!=NULL){
                 if((pos = strstr(line,"if"))!=NULL){
             line[pos-line+2]='(';
@@ -625,7 +669,7 @@ char *y = (char *)line;
             newLine[j++] = '=';
             i+=2; // Skip the next character
         }
-        if(i+1<strlen(line) && line[i] == 'o' && line[i+1] == 'r') {
+        if(i+1<strlen(line) && line[i-1]!='f' && line[i] == 'o' && line[i+1] == 'r') {
             newLine[j++] = '|';
             newLine[j++] = '|';
             i+=2; // Skip the next character
@@ -653,9 +697,11 @@ char *y = (char *)line;
     sprintf(final, "FILE *file = fopen(\"d.txt\",\"w\");\n");  
     fputs(final, cFile3);
     system("rm b.c");
-    
     memset(final, 0, sizeof(final));
-memset(final, 0, sizeof(final));
+    sprintf(final, "printf(\"%sThe Symbol table: %s\");\n", "\\t\\t\\t\\t", "\\n");
+    fputs(final, cFile3);
+    memset(final, 0, sizeof(final));
+    memset(final, 0, sizeof(final));
     for(int i=0;i<sym_cnt;i++){
 
         if(symbol_table[i]->type[0] == 'I'){
