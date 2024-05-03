@@ -412,7 +412,7 @@ int main()
                     pehla[i++]=bra[x+1];
                     x++;
                 }
-                printf("#####%s######",pehla);
+                // printf("#####%s######",pehla);
             }
            
             int len = strlen(line);
@@ -448,6 +448,9 @@ int main()
                 strncpy(pos, "printf(", 7);
             }
             strcpy(final,line);
+            printf("%s",final);
+                //sex
+                
 
             strncpy(pos, "printf", 5);
         }
