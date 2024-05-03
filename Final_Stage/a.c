@@ -132,7 +132,7 @@ int main()
                     char te[100];
                     memset(te, 0, sizeof(te));
                     strncpy(te, line, j - 1);
-                    sprintf(final, "int %s[%d];", te, last - first);
+                    sprintf(final, "int %s[%d];", te, last+1);
                 }
                 else if ((pos = strstr(line, "integer")) != NULL)
                 {
@@ -652,8 +652,8 @@ char *y = (char *)line;
     memset(final, 0, sizeof(final));
     sprintf(final, "FILE *file = fopen(\"d.txt\",\"w\");\n");  
     fputs(final, cFile3);
-    // system("rm b.c");
-    // system("gcc c.c -o output.out && ./output.out");
+    system("rm b.c");
+    system("gcc c.c -o output.out && ./output.out");
     memset(final, 0, sizeof(final));
 
     for(int i=0;i<sym_cnt;i++){
@@ -662,11 +662,11 @@ char *y = (char *)line;
             sprintf(final, "printf(\"Value of %s is %%d and is of type int\",%s);\n",    symbol_table[i]->name,symbol_table[i]->name);
             fputs(final, cFile3);
         }
-        else if(symbol_table[i]->type[i] == 'B'){
+        else if(symbol_table[i]->type[0] == 'B'){
             sprintf(final, "printf(\"Value of %s is %%d and is of type bool\",%s);\n",    symbol_table[i]->name,symbol_table[i]->name);
             fputs(final, cFile3);
         }
-        else if(symbol_table[i]->type[i] == 'C'){
+        else if(symbol_table[i]->type[0] == 'C'){
             sprintf(final, "printf(\"Value of %s is %%c and is of type char\",%s);\n",    symbol_table[i]->name,symbol_table[i]->name);
             fputs(final, cFile3);
         }
@@ -680,7 +680,7 @@ char *y = (char *)line;
     sprintf(final, "return 0;\n}");
     fputs(final, cFile3);
     fclose(cFile2);
-
+	//system("rm c.c");
     fclose(cFile3);
     fclose(pascalFile);
     
