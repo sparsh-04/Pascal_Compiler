@@ -49,7 +49,7 @@ int main()
                 continue;
             }
         }
-        if ((pos = strstr(line, "var")) != NULL)
+            if ((pos = strstr(line, "var")) != NULL)
         {
             while (fgets(line, sizeof(line), pascalFile))
             {
@@ -132,7 +132,7 @@ int main()
                     char te[100];
                     memset(te, 0, sizeof(te));
                     strncpy(te, line, j - 1);
-                    sprintf(final, "int %s[%d];", des, last + 1);
+                    sprintf(final, "int %s[%d];", des, last+1);
                 }
                 else if ((pos = strstr(line, "integer")) != NULL)
                 {
@@ -377,393 +377,316 @@ int main()
                 strcpy(final, "");
             }
         }
-        if ((pos = strstr(line, "begin")) != NULL)
-        {
-            if (beginC)
-                strcpy(final, "{");
-            beginC = 1;
-        }
-        if ((pos = strstr(line, "end;")) != NULL)
+            if((pos = strstr(line, "begin")) != NULL){
+                    if(beginC)
+                    strcpy(final, "{");
+                    beginC = 1;
+                }
+        if((pos = strstr(line, "end;")) != NULL)
             strcpy(final, "}");
-        else if ((pos = strstr(line, "end.")) != NULL)
-        {
+        else if((pos = strstr(line, "end.")) != NULL){
             strcpy(final, "");
             break;
         }
-        else if ((pos = strstr(line, "end")) != NULL)
-        {
+        else if((pos = strstr(line, "end")) != NULL){
             strcpy(final, "}");
         }
-        if ((pos = strstr(line, ":=")) != NULL)
-        {
+        if((pos = strstr(line, ":=")) != NULL){
             strncpy(pos, "= ", 2);
             strcpy(final, line);
         }
-        if ((pos = strstr(line, "if")) != NULL)
-        {
+        if((pos = strstr(line,"if")) != NULL){
             strncpy(pos, "if", 2);
             strcat(pos, " ");
         }
-        if ((pos = strstr(line, "write")) != NULL)
-        {
-
+        if((pos = strstr(line, "write")) != NULL){
+            
             int len = strlen(line);
-            for (int j = len - 2; j >= 0; j--)
-            {
-                line[j + 1] = line[j];
+            for(int j=len-2;j>=0;j--){
+                line[j+1] = line[j];
             }
             strncpy(pos, "printf", 6);
 
-            int comma = 0; // keep count of ','
-            if (pos[7] != '"')
-            {
-                for (int i = 0; pos[i] != ')'; i++)
-                {
-                    if (pos[i] == ',')
-                    {
+            int comma = 0; //keep count of ','
+            if(pos[7] != '"'){
+                for(int i=0;pos[i]!= ')';i++){
+                    if(pos[i] == ','){
                         comma++;
                     }
                 }
-                // extra characters '"",' and then '%d ' comma+1 times
-                // total (comma+2)*3
-                int push = (comma + 1) * 3 + 3;
+                //extra characters '"",' and then '%d ' comma+1 times
+                //total (comma+2)*3
+                int push = (comma+1)*3 + 3;
                 len = strlen(line);
-                for (int j = len; j >= 0; j--)
-                {
-                    line[j + push] = line[j];
+                for(int j = len;j>=0;j--){
+                    line[j+push] = line[j];
                 }
                 pos[7] = '"';
                 int temppos = 8;
 
-                while (comma-- > -1)
-                {
+                while(comma-- > -1){
                     pos[temppos++] = '\%';
                     pos[temppos++] = 'd';
                     pos[temppos++] = ' ';
                 }
                 pos[temppos++] = '"';
-                pos[temppos] = ',';
+                pos[temppos]   = ',';
                 strncpy(pos, "printf(", 7);
             }
-            strcpy(final, line);
+            strcpy(final,line);
 
             strncpy(pos, "printf", 5);
         }
 
-        if ((pos = strstr(line, "read(")) != NULL)
+        if((pos = strstr(line, "read(")) != NULL)
             strncpy(pos, "scanf ", 6);
-        if ((pos = strstr(line, "else")) != NULL)
-        {
-            if ((pos = strstr(line, "if")) != NULL)
-            {
-                line[pos - line + 2] = '(';
-                if ((pos = strstr(line, "then")) != NULL)
-                {
-                    line[pos - line - 1] = ')';
-                    for (int i = 0; i <= 3; i++)
-                        line[pos - line + i] = '\0';
-                }
-
-                int i = 0;
-                while (line[i] != '\0')
-                    i++;
-                line[i + 1] = '{';
-                strncpy(final, line, i + 1);
+        if((pos=strstr(line,"else"))!=NULL){
+                if((pos = strstr(line,"if"))!=NULL){
+            line[pos-line+2]='(';
+            if((pos=strstr(line,"then"))!=NULL){
+                line[pos-line-1]=')';
+                for(int i=0;i<=3;i++)
+                line[pos-line+i]='\0';
             }
-            else
-            {
-                strncpy(final, line, sizeof(line));
-            }
+            
+            int i=0;
+            while(line[i]!='\0')i++;
+            line[i+1]='{';
+            strncpy(final,line,i+1);
+           
         }
-        if ((pos = strstr(line, "if")) != NULL)
-        {
-            line[pos - line + 2] = '(';
-            if ((pos = strstr(line, "then")) != NULL)
-            {
-                line[pos - line - 1] = ')';
-                for (int i = 0; i <= 3; i++)
-                    line[pos - line + i] = '\0';
+        else {strncpy(final,line,sizeof(line));}
             }
-
-            int i = 0;
-            while (line[i] != '\0')
-                i++;
-
-            strncpy(final, line, i);
+        if((pos = strstr(line,"if"))!=NULL){
+            line[pos-line+2]='(';
+            if((pos=strstr(line,"then"))!=NULL){
+                line[pos-line-1]=')';
+                for(int i=0;i<=3;i++)
+                line[pos-line+i]='\0';
+            }
+            
+            int i=0;
+            while(line[i]!='\0')i++;
+            
+            strncpy(final,line,i);
+           
         }
-        if ((pos = strstr(line, "while")) != NULL)
-        {
-            line[pos - line + 5] = '(';
-            if ((pos = strstr(line, "do")) != NULL)
-            {
-                line[pos - line - 1] = ')';
-                for (int i = 0; i <= 1; i++)
-                    line[pos - line + i] = '\0';
-            }
-            int j = 0;
-            while (line[j] != '\0')
-                j++;
-            strncpy(final, line, j);
+        if((pos=strstr(line,"while"))!=NULL){
+        line[pos-line+5]='(';
+        if((pos=strstr(line,"do"))!=NULL){
+             line[pos-line-1]=')';
+                for(int i=0;i<=1;i++)
+                line[pos-line+i]='\0';
+
+        }int j=0;
+        while(line[j]!='\0')j++;
+            strncpy(final,line,j);
         }
-        if ((pos = strstr(line, "for")) != NULL)
-        {
-            // for i = number downto a+5 do
-            memset(final, '\0', sizeof(final));
-            char vari[50];
-            char start[50];
-            char end[50];
-            memset(vari, '\0', 50);
-            memset(start, '\0', 50);
-            memset(end, '\0', 50);
-            if ((strstr(line, "downto")) != NULL)
-            {
-                char *x = strstr(line, "=");
-                int xx = x - line;
+        if((pos=strstr(line,"for"))!=NULL){
+      // for i = number downto a+5 do
+    memset(final,'\0',sizeof(final));
+    char vari[50];char start[50];char end[50]; memset(vari,'\0',50); memset(start,'\0',50); memset(end,'\0',50);
+    if((strstr(line,"downto"))!=NULL){
+        char* x= strstr(line,"=");
+        int xx=x-line;
 
-                int forkistart = pos - line;
-                int i = 0;
-                while (forkistart + 3 != xx)
-                {
-
-                    vari[i] = line[forkistart + 3];
-                    i++;
-                    forkistart++;
-                }
-                // variable aa gya abb start efsnd chahiye
-
-                pos = strstr(line, "=");
-                xx = pos - line + 1;
-                x = strstr(line, "downto");
-                i = 0;
-                while (xx != x - line)
-                {
-                    start[i] = line[xx];
-                    i++;
-                    xx++;
-                }
-                xx = x - line + 6;
-                int pqrst = 2;
-                char *y = (char *)line;
-                while (pqrst > 0 && (y = strstr(y, "do")) != NULL)
-                {
-                    // Found the substring, decrement the instance count
-                    pqrst--;
-
-                    // If there are more instances to find, move the search pointer
-                    if (pqrst > 0)
-                    {
-                        y += strlen("do");
-                    }
-                }
-
-                i = 0;
-                while (xx != y - line)
-                {
-                    end[i++] = line[xx++];
-                }
-                final[0] = 'f';
-                final[1] = 'o';
-                final[2] = 'r';
-                final[3] = '(';
-                int j = 0;
-                for (j = 0; vari[j] != '\0'; j++)
-                {
-                    final[j + 4] = vari[j];
-                }
-                final[j + 4] = ' ';
-                j++;
-                final[j + 4] = '=';
-                j++;
-                for (int k = 0; start[k] != '\0'; k++)
-                {
-                    final[j + 4] = start[k];
-                    j++;
-                }
-                final[j + 4] = ';';
-                j++;
-                strcat(final, vari);
-                while (final[j] != '\0')
-                    j++;
-                final[j++] = '>';
-                final[j++] = '=';
-                strcat(final, end);
-                while (final[j] != '\0')
-                    j++;
-                final[j++] = ';';
-                strcat(final, vari);
-                while (final[j] != '\0')
-                    j++;
-                final[j++] = '-';
-                final[j++] = '-';
-                final[j++] = ')';
-            }
-            else
-            {
-                char *x = strstr(line, "=");
-                int xx = x - line;
-                int forkistart = pos - line;
-                int i = 0;
-                while (forkistart + 3 != xx)
-                {
-
-                    vari[i] = line[forkistart + 3];
-                    i++;
-                    forkistart++;
-                }
-                // variable aa gya abb start efsnd chahiye
-
-                pos = strstr(line, "=");
-                xx = pos - line + 1;
-                x = strstr(line, "to");
-                i = 0;
-                while (xx != x - line)
-                {
-                    start[i] = line[xx];
-                    i++;
-                    xx++;
-                }
-                xx = x - line + 2;
-
-                char *y = strstr(line, "do");
-                i = 0;
-                while (xx != y - line)
-                {
-                    end[i++] = line[xx++];
-                }
-                final[0] = 'f';
-                final[1] = 'o';
-                final[2] = 'r';
-                final[3] = '(';
-                int j = 0;
-                for (j = 0; vari[j] != '\0'; j++)
-                {
-                    final[j + 4] = vari[j];
-                }
-                final[j + 4] = ' ';
-                j++;
-                final[j + 4] = '=';
-                j++;
-                for (int k = 0; start[k] != '\0'; k++)
-                {
-                    final[j + 4] = start[k];
-                    j++;
-                }
-                final[j + 4] = ';';
-                j++;
-                strcat(final, vari);
-                while (final[j] != '\0')
-                    j++;
-                final[j++] = '<';
-                final[j++] = '=';
-                strcat(final, end);
-                while (final[j] != '\0')
-                    j++;
-                final[j++] = ';';
-                strcat(final, vari);
-                while (final[j] != '\0')
-                    j++;
-                final[j++] = '+';
-                final[j++] = '+';
-                final[j++] = ')';
-            }
+        int forkistart=pos-line;int i=0;
+        while(forkistart+3!=xx){
+           
+            vari[i]=line[forkistart+3];
+            i++;
+            forkistart++;
         }
+        //variable aa gya abb start efsnd chahiye
+      
+        pos=strstr(line,"=");
+         xx=pos-line+1;
+        x=strstr(line,"downto");
+        i=0;
+        while(xx!=x-line){
+        start[i]=line[xx];
+        i++;
+        xx++;}
+        xx=x-line+6;
+         int pqrst=2;
+char *y = (char *)line;
+       while (pqrst > 0 && (y = strstr(y, "do")) != NULL) {
+        // Found the substring, decrement the instance count
+        pqrst--;
+
+        // If there are more instances to find, move the search pointer
+        if (pqrst > 0) {
+            y += strlen("do");
+        }
+    }
+       
+        i=0;
+        while(xx!=y-line){
+            end[i++]=line[xx++];
+            
+        }
+            final[0]='f';final[1]='o';final[2]='r';
+            final[3]='(';int j=0;
+            for( j=0;vari[j]!='\0';j++){
+                final[j+4]=vari[j];
+            }
+            final[j+4]=' ';j++;
+            final[j+4]='=';j++;
+            for(int k=0;start[k]!='\0';k++){
+                final[j+4]=start[k];
+                j++;
+            }
+            final[j+4]=';';
+            j++;
+            strcat(final,vari);
+            while(final[j]!='\0')j++;
+            final[j++]='>';
+            final[j++]='=';
+            strcat(final,end);
+            while(final[j]!='\0')j++;
+           final[j++]=';';
+            strcat(final,vari);
+            while(final[j]!='\0')j++;
+            final[j++]='-';final[j++]='-';
+            final[j++]=')';
+
+    }
+    else{
+        char* x= strstr(line,"=");
+        int xx=x-line;
+        int forkistart=pos-line;int i=0;
+        while(forkistart+3!=xx){
+           
+            vari[i]=line[forkistart+3];
+            i++;
+            forkistart++;
+        }
+        //variable aa gya abb start efsnd chahiye
+      
+        pos=strstr(line,"=");
+         xx=pos-line+1;
+        x=strstr(line,"to");
+        i=0;
+        while(xx!=x-line){
+        start[i]=line[xx];
+        i++;
+        xx++;}
+        xx=x-line+2;
+
+        char* y=strstr(line,"do");i=0;
+        while(xx!=y-line){
+            end[i++]=line[xx++];
+            
+        }
+            final[0]='f';final[1]='o';final[2]='r';
+            final[3]='(';int j=0;
+            for( j=0;vari[j]!='\0';j++){
+                final[j+4]=vari[j];
+            }
+            final[j+4]=' ';j++;
+            final[j+4]='=';j++;
+            for(int k=0;start[k]!='\0';k++){
+                final[j+4]=start[k];
+                j++;
+            }
+            final[j+4]=';';
+            j++;
+            strcat(final,vari);
+            while(final[j]!='\0')j++;
+            final[j++]='<';
+            final[j++]='=';
+            strcat(final,end);
+            while(final[j]!='\0')j++;
+           final[j++]=';';
+            strcat(final,vari);
+            while(final[j]!='\0')j++;
+            final[j++]='+';final[j++]='+';
+            final[j++]=')';
+    }
+}
         fputs(final, cFile);
         fputs("\n", cFile);
         strcpy(final, "");
+    
     }
     // strcpy(final, "");
     fclose(cFile);
-    FILE *cFile2 = fopen("b.c", "r");
-    FILE *cFile3 = fopen("c.c", "w");
+    FILE * cFile2 = fopen("b.c", "r");
+    FILE * cFile3 = fopen("c.c", "w");
 
-    while (fgets(line, sizeof(line), cFile2))
-    {
+    while (fgets(line, sizeof(line), cFile2)) {
         memset(final, 0, sizeof(final));
         char *pos;
         char newLine[256]; // Make sure this is large enough
-        int i, j = 0;
-        for (i = 0; i < strlen(line); i++)
-        {
-            if (line[i] == '<' && line[i + 1] == '>')
-            {
-                newLine[j++] = '!';
-                newLine[j++] = '=';
-                i += 2; // Skip the next character
-            }
-            if (i + 1 < strlen(line) && line[i] == 'o' && line[i + 1] == 'r')
-            {
-                newLine[j++] = '|';
-                newLine[j++] = '|';
-                i += 2; // Skip the next character
-            }
-            if (i + 2 < strlen(line) && line[i] == 'n' && line[i + 1] == 'o' && line[i + 2] == 't')
-            {
-                newLine[j++] = '!';
-                i += 3;
-            }
-            if (i + 2 < strlen(line) && line[i] == 'a' && line[i + 1] == 'n' && line[i + 2] == 'd')
-            {
-                newLine[j++] = '&';
-                newLine[j++] = '&';
-                i += 2;
-            }
-            else
-            {
-                newLine[j++] = line[i];
-            }
+    int i, j = 0;
+    for(i = 0; i < strlen(line); i++) {
+        if(line[i] == '<' && line[i+1] == '>') {
+            newLine[j++] = '!';
+            newLine[j++] = '=';
+            i+=2; // Skip the next character
         }
-        newLine[j] = '\0';
+        if(i+1<strlen(line) && line[i] == 'o' && line[i+1] == 'r') {
+            newLine[j++] = '|';
+            newLine[j++] = '|';
+            i+=2; // Skip the next character
+        }
+        if(i+2<strlen(line) && line[i] == 'n' && line[i+1] == 'o' && line[i+2] == 't'){
+            newLine[j++] = '!';
+            i += 3;
+        }
+        if(i+2<strlen(line) && line[i] == 'a' && line[i+1] == 'n' && line[i+2] == 'd'){
+            newLine[j++] = '&';
+            newLine[j++] = '&';
+            i += 2;
+        }
+         else {
+            newLine[j++] = line[i];
+        }
+    }
+    newLine[j] = '\0';
 
         // fprintf(cFile2,newLine);
         fputs(newLine, cFile3);
     }
-
+    
     memset(final, 0, sizeof(final));
-    sprintf(final, "FILE *file = fopen(\"d.txt\",\"w\");\n");
+    sprintf(final, "FILE *file = fopen(\"d.txt\",\"w\");\n");  
     fputs(final, cFile3);
     system("rm b.c");
-
+    
     memset(final, 0, sizeof(final));
-    sprintf(final, "printf(\"%sThe Symbol table: %s\");\n", "\\t\\t\\t\\t", "\\n");
-    fputs(final, cFile3);
-    memset(final, 0, sizeof(final));
-    for (int i = 0; i < sym_cnt; i++)
-    {
+memset(final, 0, sizeof(final));
+    for(int i=0;i<sym_cnt;i++){
 
-        if (symbol_table[i]->type[0] == 'I')
-        {
-            sprintf(final, "printf(\"Value of %s is %%d and is of type int %s \",%s);\n", symbol_table[i]->name, "\\n", symbol_table[i]->name);
+        if(symbol_table[i]->type[0] == 'I'){
+            sprintf(final, "printf(\"Value of %s is %%d and is of type int %s \",%s);\n",symbol_table[i]->name,"\\n",symbol_table[i]->name);
             fputs(final, cFile3);
         }
-        else if (symbol_table[i]->type[0] == 'B')
-        {
-            sprintf(final, "printf(\"Value of %s is %%d and is of type bool  \",%s);\n", symbol_table[i]->name, symbol_table[i]->name);
+        else if(symbol_table[i]->type[0] == 'B'){
+            sprintf(final, "printf(\"Value of %s is %%d and is of type bool %s \",%s);\n",    symbol_table[i]->name,"\\n",symbol_table[i]->name);
             fputs(final, cFile3);
         }
-        else if (symbol_table[i]->type[0] == 'C')
-        {
-            sprintf(final, "printf(\"Value of %s is %%c and is of type char  \",%s);\n", symbol_table[i]->name, symbol_table[i]->name);
+        else if(symbol_table[i]->type[0] == 'C'){
+            sprintf(final, "printf(\"Value of %s is %%c and is of type char %s \",%s);\n",    symbol_table[i]->name,"\\n",symbol_table[i]->name);
             fputs(final, cFile3);
         }
-        else if (symbol_table[i]->type[0] == 'F')
-        {
-            sprintf(final, "printf(\"Value of %s is %%f and is of type float  n\",%s);\n", symbol_table[i]->name, symbol_table[i]->name);
+        else if(symbol_table[i]->type[0] == 'F'){
+            sprintf(final, "printf(\"Value of %s is %%f and is of type float  %s \",%s);\n",    symbol_table[i]->name,"\\n",symbol_table[i]->name);
             fputs(final, cFile3);
         }
     }
 
     memset(final, 0, sizeof(final));
     sprintf(final, "return 0;\n}");
-
+    
     fputs(final, cFile3);
     fclose(cFile2);
-    // system("rm c.c");
+	//system("rm c.c");
     fclose(cFile3);
     fclose(pascalFile);
     system("gcc c.c -o output && ./output");
-    system("rm output");
-    // system("rm c.c");
+	system("rm output");
+	//system("rm c.c");
     printf("Conversion completed. The C code has been written to c.c\n");
-    
     return 0;
 }
