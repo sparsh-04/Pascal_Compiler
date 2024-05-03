@@ -5,12 +5,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "a.tab.h"
+#include "useless.h"
+#include "y.tab.h"
 #include <ctype.h>
 
 #define YY_SKIP_YYWRAP
 
-int lineNum = 0;
+int lineNum = 1;
 int maxTokens = 0;
 
 typedef struct {
@@ -43,10 +44,9 @@ Boolean_operators and|or|not
 identifier [a-zA-Z_][a-zA-Z0-9_]*
 Number [0-9]+
 printStatement \".*\"
-chara ['].[']
+char ['].[']
 digit [0-9]
-BOOL 0|1
-float {digit}+\.{digit}+
+float {digit}+\.{digit}*
 %%
 
 {keywords} {
@@ -61,15 +61,15 @@ float {digit}+\.{digit}+
     }
         
     if(strcmp(yytext, "integer") == 0){
-        strcpy(yylval.node_obj.name,"int");
+        strcpy(yylval.node_obj.name,(yytext));
         return INTEGER;
     }
     if(strcmp(yytext, "Integer") == 0){
-        strcpy(yylval.node_obj.name,"int");
+        strcpy(yylval.node_obj.name,(yytext));
         return INTEGER;
     }
     if(strcmp(yytext, "real") == 0){
-        strcpy(yylval.node_obj.name,"real");
+        strcpy(yylval.node_obj.name,(yytext));
         return REAL;
     }
     if(strcmp(yytext, "boolean") == 0){
@@ -148,9 +148,8 @@ float {digit}+\.{digit}+
    addToken(yytext, "Punctuator");
   return PrintStatement;
 }
-{float} {
+float {
     addToken(yytext, "Float Number");
-    // printf("Float Number %s\n",yytext);
     strcpy(yylval.node_obj.name,(yytext));
     return REAL_NUM;
 
@@ -218,6 +217,7 @@ float {digit}+\.{digit}+
             strcpy(yylval.node_obj.name,(yytext));
             return DIV;
         }
+        return ARITHMETIC_OPERATOR;
 
 }
 {Relational_operators} {
@@ -280,7 +280,6 @@ float {digit}+\.{digit}+
     strcpy(yylval.node_obj.name,(yytext));
     return ID;
 }
-
 {Number} {
     addToken(yytext, "Number");
     strcpy(yylval.node_obj.name,(yytext));
@@ -291,12 +290,9 @@ float {digit}+\.{digit}+
     strcpy(yylval.node_obj.name,(yytext));
     return FLOAT_NUM; }
 
-{chara} {
-    addToken(yytext, "Character");
-    strcpy(yylval.node_obj.name,(yytext));
-    return CHARACTER;
+{char} {
+return CHARACTER;
 }
-
 
 [\t \r] ;
 \n {

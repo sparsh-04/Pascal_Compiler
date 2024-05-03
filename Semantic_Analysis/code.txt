@@ -1,12 +1,24 @@
-program NumberOfDigits;
+program MaxValueArray;
 var
-  number, count, a , b: Integer;
+  numbers: array[1..10] of Integer;
+  i, j, maxValue,k: Integer;
 begin
-  write("Enter a number:");
-  read(number);
-  b := 20;
-  for a := 10; to 20 do
+  write("Enter 10 integer values:");
+  for i := 1 to 10 do
   begin
-    count := 1;
+    read(numbers[i]);
   end;
+  j := 1; 
+  maxValue := numbers[1];
+  for i := j+2 to j+5 do
+  begin
+    if numbers[i] <> maxValue then
+    begin
+      maxValue := numbers[i];
+    end;
+  end;
+ 
+  write("The value is "); 
+  l := 10; 
+  write(l);
 end.

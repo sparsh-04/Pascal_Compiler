@@ -20,7 +20,7 @@ struct symbol_table {
     char * type;
     int initialized;
 
-} symbol_table[100];
+} symbol_table[500];
 
 int storeVarIndex = 0;
 int search(char *type) { 
@@ -33,7 +33,7 @@ int search(char *type) {
     } 
     return 0;
 }
-char type[10];
+char type[100];
 void insert_type() {
     strcpy(type, yytext);
     if(type[0]=='b')
@@ -207,7 +207,7 @@ program: PROGRAM ID ';' declaration BEGINI {add('K',$5.name);} statements END {a
    $$.nd = new_ast_node("program", $2.nd, $5.nd);
     // $6.nd = new_ast_node("statements", $7.nd, NULL);
     head = $$.nd;
-    printf("valid input");return 0;};
+    return 0;};
 
 
 declaration: VAR { add('K',$1.name); } var_lists {
@@ -243,16 +243,21 @@ var_list: variable {add('V',$1.name) ; strcpy($1.type,type);} ',' var_list  {
             $$.nd = new_ast_node($1.name, NULL, NULL);
             storeVar[storeVarIndex] = strdup($1.name);
             storeVarIndex++;
-
+	  
             strcpy($1.type,type);
          }
         ;
-var_list_for_print: variable { strcpy($1.type,type);} ',' var_list_for_print  { 
-                    $$.nd = new_ast_node($1.name, $4.nd,NULL);
-                    strcpy($4.type,type);}
+var_list_for_print: variable { //strcpy($1.type,type);
+symbol_exists($1.name);symbol_initialized($1.name);
+} ',' var_list_for_print  { 
+
+                    $$.nd = new_ast_node($1.name, $4.nd ,NULL);
+                    }
         | variable { 
+            symbol_exists($1.name);
+          symbol_initialized($1.name);
             $$.nd = new_ast_node($1.name, NULL, NULL);
-            strcpy($1.type,type);
+         
          }
         ;
    
@@ -279,9 +284,15 @@ assignment_statement: variable AssignOp expression ';' {
 
     symbol_exists($1.name);
     int k = findVar($1.name);
-    int t = same_type($1.name,$3.name,symbol_table[k].data_type, $3.type);
+    int t;
+        if(k!=-1){
 
-    initialize_symbol($1.name);
+    t = same_type($1.name,$3.name,symbol_table[k].data_type, $3.type);
+     //initialize_symbol($1.name);
+    }
+    else 
+    {}
+
  
 };
 
@@ -289,8 +300,15 @@ assignment_statement_loop: variable AssignOp expression {
     $$.nd = new_ast_node($2.name, $1.nd, $3.nd);
     symbol_exists($1.name);
     int k = findVar($1.name);
-    int t = same_type($1.name,$3.name,symbol_table[k].data_type, $3.type);
-    initialize_symbol($1.name);
+    int t;
+    if(k!=-1){
+
+    t = same_type($1.name,$3.name,symbol_table[k].data_type, $3.type);
+     //initialize_symbol($1.name);
+    }
+    
+    
+   
 }
 
 if_statement: IF {add('K',$1.name);} condition THEN BEGINI statements END else_statement ';'{
@@ -383,9 +401,8 @@ condition: expression RELATIONAL_OPERATOR expression { $$.nd = new_ast_node($2.n
                     symbol_initialized($2.name);
                     int k = findVar($2.name);
                     int t = same_type($2.name,"integer",symbol_table[k].data_type, "integer");}
-
-        | '(' condition ')' { $$.nd = new_ast_node("condition", $2.nd, NULL); }
         | NOT condition {$$.nd = new_ast_node("NOT", $2.nd,NULL);} 
+        | '(' condition ')' { $$.nd = new_ast_node("condition", $2.nd, NULL); }
         | expression EQ expression { $$.nd = new_ast_node($2.name, $1.nd, $3.nd); 
                                     if(!strcmp($1.type, $3.type)) {  
                                     sprintf(errors[sem_errors], "Line %d: Variable name \"%s\" and \"%s\" are of different types!\n", lineNum+1,$1.name,$3.name );
@@ -418,6 +435,7 @@ expression: expression ARITHMETIC_OPERATOR expression { $$.nd = new_ast_node($2.
             } 
         }
           | expression RELATIONAL_OPERATOR expression { $$.nd = new_ast_node($2.name, $1.nd, $3.nd);
+          
             if($1.type[0] != $3.type[0]) {  
                                     sprintf(errors[sem_errors], "Line %d: Variable name \"%s\" and \"%s\" are of different types!\n", lineNum+1,$1.name,$3.name);
                                     sem_errors++; 
@@ -510,26 +528,18 @@ void yyerror(char *s) {
 int main(int argc, char *argv[]){
 
     char* filename;
-
+	
     filename=argv[1];
 
-    printf("\n");
     extern FILE *yyin;
-    yyin=fopen(filename, "r+");
+    yyin=fopen(filename, "r");
+    //printf("%s",filename);
     yyparse();
-
-	// printf("\t\t\t\t\t\t\t\t PHASE 1: LEXICAL ANALYSIS \n\n");
-	// printf("\nSYMBOL   DATATYPE   TYPE   LINE NUMBER \n");
-	// printf("_______________________________________\n\n");
-	// int i=0;
-	// for(i=0; i<count; i++) {
-	// 	printf("%s\t%s\t%s\t\t\n", symbol_table[i].name, symbol_table[i].data_type, symbol_table[i].type);
-	// }
-	// for(i=0;i<count;i++) {
-	// 	free(symbol_table[i].name);
-	// 	free(symbol_table[i].type);
-	// }
-    fclose(fptr);
+   
+   FILE *fptr = fopen("syntaxtree.txt", "w"); 
+    print_ast_PreOrder(head,fptr);
+   fclose(fptr);
+     printf("\n\n");
     printf("\n");
     for(int i=0;i<sem_errors;i++){
         printf("%s",errors[i]);
@@ -573,7 +583,6 @@ void add(char c,char *name) {
 			symbol_table[count].data_type="NULL";
 			symbol_table[count].initialized=0;
 			symbol_table[count].type=strdup("Variable\0");
-            // symbol_exists(name);
 			count++;
 		}
 		else if(c == 'C') {

@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "a.tab.h"
+#include "y.tab.h"
 #include <ctype.h>
 
 #define YY_SKIP_YYWRAP

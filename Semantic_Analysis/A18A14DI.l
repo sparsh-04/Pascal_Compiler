@@ -5,19 +5,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "useless.h"
-#include "a.tab.h"
+#include "y.tab.h"
 #include <ctype.h>
 
 #define YY_SKIP_YYWRAP
 
-int lineNum = 1;
+int lineNum = 0;
 int maxTokens = 0;
 
 typedef struct {
     int lineNumber;
-    char token[100];
-    char tokenType[100];
+    char token[500];
+    char tokenType[500];
 } TokenInfo;
 
 TokenInfo *tokenArray = NULL;
@@ -44,9 +43,10 @@ Boolean_operators and|or|not
 identifier [a-zA-Z_][a-zA-Z0-9_]*
 Number [0-9]+
 printStatement \".*\"
-char ['].[']
+chara ['].[']
 digit [0-9]
-float {digit}+\.{digit}*
+BOOL 0|1
+float {digit}+\.{digit}+
 %%
 
 {keywords} {
@@ -61,15 +61,15 @@ float {digit}+\.{digit}*
     }
         
     if(strcmp(yytext, "integer") == 0){
-        strcpy(yylval.node_obj.name,(yytext));
+        strcpy(yylval.node_obj.name,"int");
         return INTEGER;
     }
     if(strcmp(yytext, "Integer") == 0){
-        strcpy(yylval.node_obj.name,(yytext));
+        strcpy(yylval.node_obj.name,"int");
         return INTEGER;
     }
     if(strcmp(yytext, "real") == 0){
-        strcpy(yylval.node_obj.name,(yytext));
+        strcpy(yylval.node_obj.name,"real");
         return REAL;
     }
     if(strcmp(yytext, "boolean") == 0){
@@ -148,8 +148,9 @@ float {digit}+\.{digit}*
    addToken(yytext, "Punctuator");
   return PrintStatement;
 }
-float {
+{float} {
     addToken(yytext, "Float Number");
+    // printf("Float Number %s\n",yytext);
     strcpy(yylval.node_obj.name,(yytext));
     return REAL_NUM;
 
@@ -217,7 +218,6 @@ float {
             strcpy(yylval.node_obj.name,(yytext));
             return DIV;
         }
-        return ARITHMETIC_OPERATOR;
 
 }
 {Relational_operators} {
@@ -280,6 +280,7 @@ float {
     strcpy(yylval.node_obj.name,(yytext));
     return ID;
 }
+
 {Number} {
     addToken(yytext, "Number");
     strcpy(yylval.node_obj.name,(yytext));
@@ -290,9 +291,12 @@ float {
     strcpy(yylval.node_obj.name,(yytext));
     return FLOAT_NUM; }
 
-{char} {
-return CHARACTER;
+{chara} {
+    addToken(yytext, "Character");
+    strcpy(yylval.node_obj.name,(yytext));
+    return CHARACTER;
 }
+
 
 [\t \r] ;
 \n {
